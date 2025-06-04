@@ -305,9 +305,10 @@ namespace NPBehave
                 bool drawLabel = !string.IsNullOrEmpty(node.Label);
                 string label = node.Label;
 
-                if (node is BlackboardCondition)
+                var type = node.GetType();
+                if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(BlackboardCondition<>))
                 {
-                    BlackboardCondition nodeBlackboardCond = node as BlackboardCondition;
+                    dynamic nodeBlackboardCond = node;
                     tagName = nodeBlackboardCond.Key + " " + operatorToString[nodeBlackboardCond.Operator] + " " + nodeBlackboardCond.Value;
                     GUI.backgroundColor = new Color(0.9f, 0.9f, 0.6f);
                 }

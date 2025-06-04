@@ -3,12 +3,8 @@ namespace NPBehave
 {
     public class Root : Decorator
     {
-        private Node mainNode;
-
-        //private Node inProgressNode;
-
         private Blackboard blackboard;
-        public override Blackboard Blackboard
+        public Blackboard RootBlackboard
         {
             get
             {
@@ -17,7 +13,7 @@ namespace NPBehave
         }
         
         private Clock clock;
-        public override Clock Clock
+        public Clock RootClock
         {
             get
             {
@@ -31,25 +27,23 @@ namespace NPBehave
         public int TotalNumStoppedCalls = 0;
 #endif
 
-        public Root(Node mainNode) : base("Root", mainNode)
+        public Root(Node decoratee) : base("Root", decoratee)
         {
-            this.mainNode = mainNode;
             this.clock = UnityContext.GetClock();
             this.blackboard = new Blackboard(this.clock);
             this.SetRoot(this);
         }
-        public Root(Blackboard blackboard, Node mainNode) : base("Root", mainNode)
+        
+        public Root(Blackboard blackboard, Node decoratee) : base("Root", decoratee)
         {
             this.blackboard = blackboard;
-            this.mainNode = mainNode;
             this.clock = UnityContext.GetClock();
             this.SetRoot(this);
         }
 
-        public Root(Blackboard blackboard, Clock clock, Node mainNode) : base("Root", mainNode)
+        public Root(Blackboard blackboard, Clock clock, Node decoratee) : base("Root", decoratee)
         {
             this.blackboard = blackboard;
-            this.mainNode = mainNode;
             this.clock = clock;
             this.SetRoot(this);
         }
@@ -57,24 +51,24 @@ namespace NPBehave
         public override void SetRoot(Root rootNode)
         {
             base.SetRoot(rootNode);
-            this.mainNode.SetRoot(rootNode);
+            this.Decoratee.SetRoot(rootNode);
         }
         
         protected override void DoStart()
         {
             this.blackboard.Enable();
-            this.mainNode.Start();
+            this.Decoratee.Start();
         }
 
         protected override void DoStop()
         {
-            if (this.mainNode.IsActive)
+            if (this.Decoratee.IsActive)
             {
-                this.mainNode.Stop();
+                this.Decoratee.Stop();
             }
             else
             {
-                this.clock.RemoveTimer(this.mainNode.Start);
+                this.clock.RemoveTimer(this.Decoratee.Start);
             }
         }
         
@@ -83,7 +77,7 @@ namespace NPBehave
             if (!IsStopRequested)
             {
                 // wait one tick, to prevent endless recursions
-                this.clock.AddTimer(0, 0, this.mainNode.Start);
+                this.clock.AddTimer(0, 0, this.Decoratee.Start);
             }
             else
             {

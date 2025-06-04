@@ -31,12 +31,12 @@ namespace NPBehave
 
         protected override void StartObserving()
         {
-            this.RootNode.Clock.AddTimer(checkInterval, checkVariance, -1, Evaluate);
+            Clock.AddTimer(checkInterval, checkVariance, -1, Evaluate);
         }
 
         protected override void StopObserving()
         {
-            this.RootNode.Clock.RemoveTimer(Evaluate);
+            Clock.RemoveTimer(Evaluate);
         }
 
         protected override bool IsConditionMet()

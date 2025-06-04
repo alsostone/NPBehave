@@ -41,7 +41,7 @@ public class NPBehaveExampleSwarmEnemyAI : MonoBehaviour
 
                     // check the 'engaged' blackboard value.
                     // When the condition changes, we want to immediately jump in or out of this path, thus we use IMMEDIATE_RESTART
-                    new BlackboardCondition("engaged", Operator.IS_EQUAL, true, Stops.IMMEDIATE_RESTART,
+                    new BlackboardCondition<bool>("engaged", Operator.IS_EQUAL, true, Stops.IMMEDIATE_RESTART,
 
                         // we are currently engaged with the player
                         new Sequence(
@@ -70,7 +70,7 @@ public class NPBehaveExampleSwarmEnemyAI : MonoBehaviour
 
                         // this time we can also use NBtrStops.BOTH, which stops the current branch if the condition changes but will traverse the 
                         // tree further the normal way (in that case, doesn't make a difference at all). 
-                        new BlackboardCondition("playerInRange", Operator.IS_EQUAL, true, Stops.BOTH,
+                        new BlackboardCondition<bool>("playerInRange", Operator.IS_EQUAL, true, Stops.BOTH,
 
                             // player is not in range, mark 'yellow'
                             new Sequence(

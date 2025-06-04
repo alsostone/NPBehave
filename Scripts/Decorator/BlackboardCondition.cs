@@ -1,10 +1,12 @@
 ﻿
+using System;
+
 namespace NPBehave
 {
-    public class BlackboardCondition : ObservingDecorator
+    public class BlackboardCondition<T> : ObservingDecorator where T : IComparable<T>
     {
         private string key;
-        private object value;
+        private T value;
         private Operator op;
 
         public string Key
@@ -15,7 +17,7 @@ namespace NPBehave
             }
         }
 
-        public object Value
+        public T Value
         {
             get
             {
@@ -31,7 +33,7 @@ namespace NPBehave
             }
         }
 
-        public BlackboardCondition(string key, Operator op, object value, Stops stopsOnChange, Node decoratee) : base("BlackboardCondition", stopsOnChange, decoratee)
+        public BlackboardCondition(string key, Operator op, T value, Stops stopsOnChange, Node decoratee) : base("BlackboardCondition", stopsOnChange, decoratee)
         {
             this.op = op;
             this.key = key;
@@ -49,12 +51,12 @@ namespace NPBehave
 
         protected override void StartObserving()
         {
-            this.RootNode.Blackboard.AddObserver(key, onValueChanged);
+            Blackboard.AddObserver(key, onValueChanged);
         }
 
         protected override void StopObserving()
         {
-            this.RootNode.Blackboard.RemoveObserver(key, onValueChanged);
+            Blackboard.RemoveObserver(key, onValueChanged);
         }
 
         private void onValueChanged(Blackboard.Type type, object newValue)
@@ -69,75 +71,21 @@ namespace NPBehave
                 return true;
             }
 
-            if (!this.RootNode.Blackboard.Isset(key))
+            if (!Blackboard.Isset(key))
             {
                 return op == Operator.IS_NOT_SET;
             }
 
-            object o = this.RootNode.Blackboard.Get(key);
-
+            var o = Blackboard.Get<T>(key);
             switch (this.op)
             {
                 case Operator.IS_SET: return true;
-                case Operator.IS_EQUAL: return object.Equals(o, value);
-                case Operator.IS_NOT_EQUAL: return !object.Equals(o, value);
-
-                case Operator.IS_GREATER_OR_EQUAL:
-                    if (o is float)
-                    {
-                        return (float)o >= (float)this.value;
-                    }
-                    else if (o is int)
-                    {
-                        return (int)o >= (int)this.value;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-
-                case Operator.IS_GREATER:
-                    if (o is float)
-                    {
-                        return (float)o > (float)this.value;
-                    }
-                    else if (o is int)
-                    {
-                        return (int)o > (int)this.value;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-
-                case Operator.IS_SMALLER_OR_EQUAL:
-                    if (o is float)
-                    {
-                        return (float)o <= (float)this.value;
-                    }
-                    else if (o is int)
-                    {
-                        return (int)o <= (int)this.value;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-
-                case Operator.IS_SMALLER:
-                    if (o is float)
-                    {
-                        return (float)o < (float)this.value;
-                    }
-                    else if (o is int)
-                    {
-                        return (int)o < (int)this.value;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-
+                case Operator.IS_EQUAL: return o.CompareTo(value) == 0;
+                case Operator.IS_NOT_EQUAL: return o.CompareTo(value) != 0;
+                case Operator.IS_GREATER_OR_EQUAL: return o.CompareTo(value) >= 0;
+                case Operator.IS_GREATER: return o.CompareTo(value) > 0;
+                case Operator.IS_SMALLER_OR_EQUAL: return o.CompareTo(value) <= 0;
+                case Operator.IS_SMALLER: return o.CompareTo(value) < 0;
                 default: return false;
             }
         }
