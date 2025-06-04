@@ -15,11 +15,21 @@ public class NPBehaveExampleClockThrottling : MonoBehaviour
     private Root behaviorTree;
     private float accumulator = 0.0f;
 
+    private class UpdateService : Service
+    {
+        public UpdateService(Node decoratee) : base(decoratee)
+        {
+        }
+
+        protected override void OnService()
+        {
+            Debug.Log("Test");
+        }
+    }
+
     void Start()
     {
-        Node mainTree = new Service(() => { Debug.Log("Test"); },
-            new WaitUntilStopped()
-        );
+        Node mainTree = new UpdateService(new WaitUntilStopped());
         myThrottledClock = new Clock();
         behaviorTree = new Root(new Blackboard(myThrottledClock), myThrottledClock, mainTree);
         behaviorTree.Start();

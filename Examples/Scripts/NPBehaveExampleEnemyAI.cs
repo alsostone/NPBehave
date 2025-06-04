@@ -1,16 +1,15 @@
 ﻿using UnityEngine;
 using NPBehave;
+using NPBehave.Examples;
 
 public class NPBehaveExampleEnemyAI : MonoBehaviour
 {
-    private Blackboard blackboard;
     private Root behaviorTree;
 
     void Start()
     {
         // create our behaviour tree and get it's blackboard
         behaviorTree = CreateBehaviourTree();
-        blackboard = behaviorTree.Blackboard;
 
         // attach the debugger component if executed in editor (helps to debug in the inspector) 
 #if UNITY_EDITOR
@@ -21,14 +20,32 @@ public class NPBehaveExampleEnemyAI : MonoBehaviour
         // start the behaviour tree
         behaviorTree.Start();
     }
-
+    
+    private class UpdateService : Service
+    {
+        private readonly Transform transform;
+        
+        public UpdateService(Transform transform, float interval, Node decoratee) : base(interval, decoratee)
+        {
+            this.transform = transform;
+        }
+        
+        protected override void OnService()
+        {
+            Vector3 playerLocalPos = transform.InverseTransformPoint(GameObject.FindGameObjectWithTag("Player").transform.position);
+            Blackboard["playerLocalPos"] = playerLocalPos;
+            Blackboard["playerDistance"] = playerLocalPos.magnitude;
+        }
+    }
+    
     private Root CreateBehaviourTree()
     {
         // we always need a root node
+        var transform1 = transform;
         return new Root(
 
             // kick up our service to update the "playerDistance" and "playerLocalPos" Blackboard values every 125 milliseconds
-            new Service(0.125f, UpdatePlayerDistance,
+            new UpdateService(transform1, 0.125f,
 
                 new Selector(
 
@@ -40,48 +57,21 @@ public class NPBehaveExampleEnemyAI : MonoBehaviour
                         new Sequence(
 
                             // set color to 'red'
-                            new Action(() => SetColor(Color.red)) { Label = "Change to Red" },
+                            new ActionColor(transform1, Color.red) { Label = "Change to Red" },
 
                             // go towards player until playerDistance is greater than 7.5 ( in that case, _shouldCancel will get true )
-                            new Action((bool _shouldCancel) =>
-                            {
-                                if (!_shouldCancel)
-                                {
-                                    MoveTowards(blackboard.Get<Vector3>("playerLocalPos"));
-                                    return Action.Result.PROGRESS;
-                                }
-                                else
-                                {
-                                    return Action.Result.FAILED;
-                                }
-                            }) { Label = "Follow" }
+                            new ActionTowards(transform1) { Label = "Follow" }
                         )
                     ),
 
                     // park until playerDistance does change
                     new Sequence(
-                        new Action(() => SetColor(Color.grey)) { Label = "Change to Gray" },
+                        new ActionColor(transform1, Color.grey) { Label = "Change to Gray" },
                         new WaitUntilStopped()
                     )
                 )
             )
         );
     }
-
-    private void UpdatePlayerDistance()
-    {
-        Vector3 playerLocalPos = this.transform.InverseTransformPoint(GameObject.FindGameObjectWithTag("Player").transform.position);
-        behaviorTree.Blackboard["playerLocalPos"] = playerLocalPos;
-        behaviorTree.Blackboard["playerDistance"] = playerLocalPos.magnitude;
-    }
-
-    private void MoveTowards(Vector3 localPosition)
-    {
-        transform.localPosition += localPosition * 0.5f * Time.deltaTime;
-    }
-
-    private void SetColor(Color color)
-    {
-        GetComponent<MeshRenderer>().material.SetColor("_Color", color);
-    }
+    
 }

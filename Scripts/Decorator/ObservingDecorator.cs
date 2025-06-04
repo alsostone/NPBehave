@@ -6,7 +6,7 @@ namespace NPBehave
         protected Stops stopsOnChange;
         private bool isObserving;
 
-        public ObservingDecorator(string name, Stops stopsOnChange, Node decoratee) : base(name, decoratee)
+        protected ObservingDecorator(string name, Stops stopsOnChange, Node decoratee) : base(name, decoratee)
         {
             this.stopsOnChange = stopsOnChange;
             this.isObserving = false;

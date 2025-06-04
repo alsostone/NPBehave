@@ -1,14 +1,12 @@
 ﻿namespace NPBehave
 {
-    public class BlackboardQuery : ObservingDecorator
+    public abstract class BlackboardQuery : ObservingDecorator
     {
-        private string[] keys;
-        private System.Func<bool> query;
+        private readonly string[] keys;
 
-        public BlackboardQuery(string[] keys, Stops stopsOnChange, System.Func<bool> query, Node decoratee) : base("BlackboardQuery", stopsOnChange, decoratee)
+        protected BlackboardQuery(string[] keys, Stops stopsOnChange, Node decoratee) : base("BlackboardQuery", stopsOnChange, decoratee)
         {
             this.keys = keys;
-            this.query = query;
         }
 
         protected override void StartObserving()
@@ -32,19 +30,14 @@
             Evaluate();
         }
 
-        protected override bool IsConditionMet()
-        {
-            return this.query();
-        }
-
         public override string ToString()
         {
-            string keys = "";
+            string s = "";
             foreach (string key in this.keys)
             {
-                keys += " " + key;
+                s += " " + key;
             }
-            return Name + keys;
+            return Name + s;
         }
     }
 }

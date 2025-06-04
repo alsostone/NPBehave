@@ -1,16 +1,29 @@
 ﻿using UnityEngine;
 using NPBehave;
+using NPBehave.Examples;
 
 public class NPBehaveExampleHelloBlackboardsAI : MonoBehaviour
 {
     private Root behaviorTree;
+
+    private class UpdateService : Service
+    {
+        public UpdateService(float interval, Node decoratee) : base(interval, decoratee)
+        {
+        }
+        
+        protected override void OnService()
+        {
+            Blackboard["foo"] = !Blackboard.Get<bool>("foo");
+        }
+    }
 
     void Start()
     {
         behaviorTree = new Root(
 
             // toggle the 'toggled' blackboard boolean flag around every 500 milliseconds
-            new Service(0.5f, () => { behaviorTree.Blackboard["foo"] = !behaviorTree.Blackboard.Get<bool>("foo"); },
+            new UpdateService(0.5f,
 
                 new Selector(
 
@@ -23,7 +36,7 @@ public class NPBehaveExampleHelloBlackboardsAI : MonoBehaviour
                         new Sequence(
 
                             // print out a message ...
-                            new Action(() => Debug.Log("foo")),
+                            new ActionLog("foo"),
 
                             // ... and stay here until the `BlackboardValue`-node stops us because the toggled flag went false.
                             new WaitUntilStopped()
@@ -32,7 +45,7 @@ public class NPBehaveExampleHelloBlackboardsAI : MonoBehaviour
 
                     // when 'toggled' is false, we'll eventually land here
                     new Sequence(
-                        new Action(() => Debug.Log("bar")),
+                        new ActionLog("bar"),
                         new WaitUntilStopped()
                     )
                 )

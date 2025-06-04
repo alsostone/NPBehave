@@ -2,25 +2,20 @@
 
 namespace NPBehave
 {
-    public class WaitForCondition : Decorator
+    public abstract class WaitForCondition : Decorator
     {
-        private Func<bool> condition;
         private float checkInterval;
         private float checkVariance;
 
-        public WaitForCondition(Func<bool> condition, float checkInterval, float randomVariance, Node decoratee) : base("WaitForCondition", decoratee)
+        protected WaitForCondition(float checkInterval, float randomVariance, Node decoratee) : base("WaitForCondition", decoratee)
         {
-            this.condition = condition;
-
             this.checkInterval = checkInterval;
             this.checkVariance = randomVariance;
-
             this.Label = "" + (checkInterval - randomVariance) + "..." + (checkInterval + randomVariance) + "s";
         }
 
-        public WaitForCondition(Func<bool> condition, Node decoratee) : base("WaitForCondition", decoratee)
+        protected WaitForCondition(Node decoratee) : base("WaitForCondition", decoratee)
         {
-            this.condition = condition;
             this.checkInterval = 0.0f;
             this.checkVariance = 0.0f;
             this.Label = "every tick";
@@ -28,9 +23,9 @@ namespace NPBehave
 
         protected override void DoStart()
         {
-            if (!condition.Invoke())
+            if (!IsConditionMet())
             {
-                Clock.AddTimer(checkInterval, checkVariance, -1, checkCondition);
+                Clock.AddTimer(checkInterval, checkVariance, -1, OnTimerReached);
             }
             else
             {
@@ -38,18 +33,18 @@ namespace NPBehave
             }
         }
 
-        private void checkCondition()
+        private void OnTimerReached()
         {
-            if (condition.Invoke())
+            if (IsConditionMet())
             {
-                Clock.RemoveTimer(checkCondition);
+                Clock.RemoveTimer(OnTimerReached);
                 Decoratee.Start();
             }
         }
 
         protected override void DoStop()
         {
-            Clock.RemoveTimer(checkCondition);
+            Clock.RemoveTimer(OnTimerReached);
             if (Decoratee.IsActive)
             {
                 Decoratee.Stop();
@@ -64,5 +59,7 @@ namespace NPBehave
         {
             Stopped(result);
         }
+        
+        protected abstract bool IsConditionMet();
     }
 }

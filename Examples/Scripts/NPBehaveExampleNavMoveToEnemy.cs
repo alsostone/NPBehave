@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using NPBehave;
+using NPBehave.Examples;
 
 public class NPBehaveExampleNavMoveToEnemy : MonoBehaviour
 {
@@ -24,13 +25,32 @@ public class NPBehaveExampleNavMoveToEnemy : MonoBehaviour
         behaviorTree.Start();
     }
 
+    private class UpdateService : Service
+    {
+        private readonly Transform transform;
+        
+        public UpdateService(Transform transform, float interval, Node decoratee) : base(interval, decoratee)
+        {
+            this.transform = transform;
+        }
+        
+        protected override void OnService()
+        {
+            Transform playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
+            Vector3 playerPos = playerTransform.position;
+            Blackboard["playerPos"] = playerPos;
+            Blackboard["playerDistance"] = (playerPos - transform.position).magnitude;
+        }
+    }
+    
     private Root CreateBehaviourTree()
     {
         // we always need a root node
+        var transform1 = transform;
         return new Root(
 
             // kick up our service to update the "playerDistance" and "playerPos" Blackboard values every 125 milliseconds
-            new Service(0.125f, UpdateBlackboard,
+            new UpdateService(transform1, 0.125f,
 
                 new Selector(
 
@@ -42,23 +62,23 @@ public class NPBehaveExampleNavMoveToEnemy : MonoBehaviour
                         new Sequence(
 
                             // set color to 'red'
-                            new Action(() => SetColor(Color.yellow)) { Label = "Change to Yellow" },
+                            new ActionColor(transform1, Color.yellow) { Label = "Change to Yellow" },
 
                             // go towards player until playerDistance is greater than 7.5f, but stop once within 1.5f
                             new NavMoveTo(Agent, "playerPos", 2.0f, true) { Label = "Follow" },
 
                             // stop when reached the player position
-                            new Action(() => SetColor(Color.red)) { Label = "Change to Red" },
+                            new ActionColor(transform1, Color.red) { Label = "Change to Red" },
 
                             // stop only when player distance is further away again
-                            new Wait(0.5f)
+                            new WaitSecond(0.5f)
                         )
 
                     ),
 
                     // park until playerDistance does change
                     new Sequence(
-                        new Action(() => SetColor(Color.grey)) { Label = "Change to Gray" },
+                        new ActionColor(transform1, Color.grey) { Label = "Change to Gray" },
                         new WaitUntilStopped()
                     )
                 )
@@ -66,21 +86,9 @@ public class NPBehaveExampleNavMoveToEnemy : MonoBehaviour
         );
     }
 
-    private void UpdateBlackboard()
-    {
-        Transform playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
-        Vector3 playerPos = playerTransform.position;
-        behaviorTree.Blackboard["playerPos"] = playerPos;
-        behaviorTree.Blackboard["playerDistance"] = (playerPos - transform.position).magnitude;
-    }
-
     private void MoveTowards(Vector3 localPosition)
     {
         transform.localPosition += localPosition * 0.5f * Time.deltaTime;
     }
-
-    private void SetColor(Color color)
-    {
-        GetComponent<MeshRenderer>().material.SetColor("_Color", color);
-    }
+    
 }

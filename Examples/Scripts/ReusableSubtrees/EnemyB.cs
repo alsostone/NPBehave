@@ -1,12 +1,11 @@
 ﻿using UnityEngine;
-using NPBehave;
 
 namespace NPBehave.Examples.ReusableSubtrees
 {
     public class EnemyB : MonoBehaviour
     {
         private Root behaviorTree;
-
+        
         void Start()
         {
             // this enemy is only able to move
@@ -17,7 +16,7 @@ namespace NPBehave.Examples.ReusableSubtrees
                     NodeFactory.CreateMoveSubtree("EnemyB"),
 
                     // also add some custom behavior
-                    new Action(() => Debug.Log("EnemyB attacking!"))
+                    new ActionLog("EnemyB attacking!")
                 )
             );
             behaviorTree.Start();

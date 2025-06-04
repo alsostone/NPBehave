@@ -4,18 +4,13 @@ namespace NPBehave
 {
     public class Observer : Decorator
     {
-        private System.Action onStart;
-        private System.Action<bool> onStop;
-
-        public Observer(System.Action onStart, System.Action<bool> onStop, Node decoratee) : base("Observer", decoratee)
+        public Observer(Node decoratee) : base("Observer", decoratee)
         {
-            this.onStart = onStart;
-            this.onStop = onStop;
         }
 
         protected override void DoStart()
         {
-            this.onStart();
+            // do something
             Decoratee.Start();
         }
 
@@ -26,7 +21,7 @@ namespace NPBehave
 
         protected override void DoChildStopped(Node child, bool result)
         {
-            this.onStop(result);
+            // do something
             Stopped(result);
         }
     }

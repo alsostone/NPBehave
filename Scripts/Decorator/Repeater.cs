@@ -32,7 +32,7 @@
 
         protected override void DoStop()
         {
-            this.Clock.RemoveTimer(restartDecoratee);
+            this.Clock.RemoveTimer(RestartDecoratee);
             
             if (Decoratee.IsActive)
             {
@@ -54,7 +54,7 @@
                 }
                 else
                 {
-                    this.Clock.AddTimer(0, 0, restartDecoratee);
+                    this.Clock.AddTimer(0, 0, RestartDecoratee);
                 }
             }
             else
@@ -63,7 +63,7 @@
             }
         }
 
-        protected void restartDecoratee()
+        protected void RestartDecoratee()
         {
             Decoratee.Start();
         }

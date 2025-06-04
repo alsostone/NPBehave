@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using NPBehave;
+using NPBehave.Examples;
 
 public class NPBehaveExampleSwarmEnemyAI : MonoBehaviour
 {
@@ -29,13 +30,55 @@ public class NPBehaveExampleSwarmEnemyAI : MonoBehaviour
         behaviorTree.Start();
     }
 
+    private class UpdateService : Service
+    {
+        private readonly Transform transform;
+        private readonly Blackboard sharedBlackboard;
+        
+        public UpdateService(Blackboard sharedBlackboard, Transform transform, float interval, Node decoratee) : base(interval, decoratee)
+        {
+            this.sharedBlackboard = sharedBlackboard;
+            this.transform = transform;
+        }
+        
+        protected override void OnService()
+        {
+            Vector3 playerLocalPos = transform.InverseTransformPoint(GameObject.FindGameObjectWithTag("Player").transform.position);
+
+            // update all our distances
+            Blackboard["playerLocalPos"]= playerLocalPos;
+            Blackboard["playerInRange"]= playerLocalPos.magnitude < 7.5f;
+
+            // if we are not yet engaging the player, but he is in range and there are not yet other 2 guys engaged with him
+            if (Blackboard.Get<bool>("playerInRange") && !Blackboard.Get<bool>("engaged") && sharedBlackboard.Get<int>("numEngagedActors") < 2)
+            {
+                // increment the shared 'numEngagedActors'
+                sharedBlackboard["numEngagedActors"]= sharedBlackboard.Get<int>("numEngagedActors") + 1;
+
+                // set this instance to 'engaged'
+                Blackboard["engaged"]= true;
+            }
+
+            // if we were engaging the player, but he is not in the range anymore
+            if (!Blackboard.Get<bool>("playerInRange") && Blackboard.Get<bool>("engaged"))
+            {
+                // decrement the shared 'numEngagedActors'
+                sharedBlackboard["numEngagedActors"]= sharedBlackboard.Get<int>("numEngagedActors") - 1;
+
+                // set this instance to 'engaged'
+                Blackboard["engaged"]= false;
+            }
+        }
+    }
+    
     private Root CreateBehaviourTree()
     {
         // Tell the behaviour tree to use the provided blackboard instead of creating a new one
+        var transform1 = transform;
         return new Root(ownBlackboard,
 
             // Update values in the blackboards every 125 milliseconds
-            new Service(0.125f, UpdateBlackboards,
+            new UpdateService(sharedBlackboard, transform1, 0.125f,
 
                 new Selector(
 
@@ -47,21 +90,10 @@ public class NPBehaveExampleSwarmEnemyAI : MonoBehaviour
                         new Sequence(
 
                             // set color to 'red'
-                            new Action(() => SetColor(Color.red)) { Label = "Change to Red" },
+                            new ActionColor(transform1, Color.red) { Label = "Change to Red" },
 
                             // go towards player until we are not engaged anymore
-                            new Action((bool _shouldCancel) =>
-                            {
-                                if (!_shouldCancel)
-                                {
-                                    MoveTowards(ownBlackboard.Get<Vector3>("playerLocalPos"));
-                                    return Action.Result.PROGRESS;
-                                }
-                                else
-                                {
-                                    return Action.Result.FAILED;
-                                }
-                            }){ Label = "Follow" }
+                            new ActionTowards(transform1){ Label = "Follow" }
                         )
                     ),
 
@@ -74,14 +106,14 @@ public class NPBehaveExampleSwarmEnemyAI : MonoBehaviour
 
                             // player is not in range, mark 'yellow'
                             new Sequence(
-                                new Action(() => SetColor(Color.yellow)) { Label = "Change to Yellow" },
+                                new ActionColor(transform1, Color.yellow) { Label = "Change to Yellow" },
                                 new WaitUntilStopped()
                             )
                         ),
 
                         // player is not in range, mark 'gray'
                         new Sequence(
-                            new Action(() => SetColor(Color.grey)) { Label = "Change to Gray" },
+                            new ActionColor(transform1, Color.grey) { Label = "Change to Gray" },
                             new WaitUntilStopped()
                         )
                     )
@@ -90,42 +122,4 @@ public class NPBehaveExampleSwarmEnemyAI : MonoBehaviour
         );
     }
 
-    private void UpdateBlackboards()
-    {
-        Vector3 playerLocalPos = this.transform.InverseTransformPoint(GameObject.FindGameObjectWithTag("Player").transform.position);
-
-        // update all our distances
-        ownBlackboard["playerLocalPos"]= playerLocalPos;
-        ownBlackboard["playerInRange"]= playerLocalPos.magnitude < 7.5f;
-
-        // if we are not yet engaging the player, but he is in range and there are not yet other 2 guys engaged with him
-        if (ownBlackboard.Get<bool>("playerInRange") && !ownBlackboard.Get<bool>("engaged") && sharedBlackboard.Get<int>("numEngagedActors") < 2)
-        {
-            // increment the shared 'numEngagedActors'
-            sharedBlackboard["numEngagedActors"]= sharedBlackboard.Get<int>("numEngagedActors") + 1;
-
-            // set this instance to 'engaged'
-            ownBlackboard["engaged"]= true;
-        }
-
-        // if we were engaging the player, but he is not in the range anymore
-        if (!ownBlackboard.Get<bool>("playerInRange") && ownBlackboard.Get<bool>("engaged"))
-        {
-            // decrement the shared 'numEngagedActors'
-            sharedBlackboard["numEngagedActors"]= sharedBlackboard.Get<int>("numEngagedActors") - 1;
-
-            // set this instance to 'engaged'
-            ownBlackboard["engaged"]= false;
-        }
-    }
-
-    private void MoveTowards(Vector3 localPosition)
-    {
-        transform.localPosition += localPosition * 0.5f * Time.deltaTime;
-    }
-
-    private void SetColor(Color color)
-    {
-        GetComponent<MeshRenderer>().material.SetColor("_Color", color);
-    }
 }

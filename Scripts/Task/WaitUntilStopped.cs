@@ -2,15 +2,16 @@
 {
     public class WaitUntilStopped : Task
     {
-        private bool sucessWhenStopped;
-        public WaitUntilStopped(bool sucessWhenStopped = false) : base("WaitUntilStopped")
+        private readonly bool successWhenStopped;
+        
+        public WaitUntilStopped(bool successWhenStopped = false) : base("WaitUntilStopped")
         {
-            this.sucessWhenStopped = sucessWhenStopped;
+            this.successWhenStopped = successWhenStopped;
         }
 
         protected override void DoStop()
         {
-            this.Stopped(sucessWhenStopped);
+            this.Stopped(successWhenStopped);
         }
     }
 }

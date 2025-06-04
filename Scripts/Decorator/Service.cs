@@ -1,32 +1,26 @@
 ﻿namespace NPBehave
 {
-    public class Service : Decorator
+    public abstract class Service : Decorator
     {
-        private System.Action serviceMethod;
-
         private float interval = -1.0f;
         private float randomVariation;
 
-        public Service(float interval, float randomVariation, System.Action service, Node decoratee) : base("Service", decoratee)
+        protected Service(float interval, float randomVariation, Node decoratee) : base("Service", decoratee)
         {
-            this.serviceMethod = service;
             this.interval = interval;
             this.randomVariation = randomVariation;
-
             this.Label = "" + (interval - randomVariation) + "..." + (interval + randomVariation) + "s";
         }
 
-        public Service(float interval, System.Action service, Node decoratee) : base("Service", decoratee)
+        protected Service(float interval, Node decoratee) : base("Service", decoratee)
         {
-            this.serviceMethod = service;
             this.interval = interval;
             this.randomVariation = interval * 0.05f;
             this.Label = "" + (interval - randomVariation) + "..." + (interval + randomVariation) + "s";
         }
 
-        public Service(System.Action service, Node decoratee) : base("Service", decoratee)
+        protected Service(Node decoratee) : base("Service", decoratee)
         {
-            this.serviceMethod = service;
             this.Label = "every tick";
         }
 
@@ -34,13 +28,13 @@
         {
             if (this.interval <= 0f)
             {
-                this.Clock.AddUpdateObserver(serviceMethod);
-                serviceMethod();
+                this.Clock.AddUpdateObserver(OnService);
+                OnService();
             }
             else if (randomVariation <= 0f)
             {
-                this.Clock.AddTimer(this.interval, -1, serviceMethod);
-                serviceMethod();
+                this.Clock.AddTimer(this.interval, -1, OnService);
+                OnService();
             }
             else
             {
@@ -58,11 +52,11 @@
         {
             if (this.interval <= 0f)
             {
-                this.Clock.RemoveUpdateObserver(serviceMethod);
+                this.Clock.RemoveUpdateObserver(OnService);
             }
             else if (randomVariation <= 0f)
             {
-                this.Clock.RemoveTimer(serviceMethod);
+                this.Clock.RemoveTimer(OnService);
             }
             else
             {
@@ -73,8 +67,10 @@
 
         private void InvokeServiceMethodWithRandomVariation()
         {
-            serviceMethod();
+            OnService();
             this.Clock.AddTimer(interval, randomVariation, 0, InvokeServiceMethodWithRandomVariation);
         }
+        
+        protected abstract void OnService();
     }
 }

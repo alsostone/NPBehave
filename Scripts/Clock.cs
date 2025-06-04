@@ -42,7 +42,7 @@ namespace NPBehave
         }
 
         /// <summary>Register a timer function with random variance</summary>
-        /// <param name="time">time in milliseconds</param>
+        /// <param name="delay">time in milliseconds</param>
         /// <param name="randomVariance">deviate from time on a random basis</param>
         /// <param name="repeat">number of times to repeat, set to -1 to repeat until unregistered.</param>
         /// <param name="action">method to invoke</param>

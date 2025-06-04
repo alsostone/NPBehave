@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace NPBehave
+namespace NPBehave.Examples
 {
     public class NavMoveTo : Task
     {
@@ -51,7 +51,7 @@ namespace NPBehave
             failedChecks = 0;
 
             Blackboard.AddObserver(blackboardKey, onBlackboardValueChanged);
-            Clock.AddTimer(updateFrequency, updateVariance, -1, onUpdateTimer);
+            Clock.AddTimer(updateFrequency, updateVariance, -1, OnTimerReached);
 
             moveToBlackboardKey();
         }
@@ -66,7 +66,7 @@ namespace NPBehave
             moveToBlackboardKey();
         }
 
-        private void onUpdateTimer()
+        private void OnTimerReached()
         {
             moveToBlackboardKey();
         }
@@ -147,7 +147,7 @@ namespace NPBehave
         {
             agent.destination = agent.transform.position;
             Blackboard.RemoveObserver(blackboardKey, onBlackboardValueChanged);
-            Clock.RemoveTimer(onUpdateTimer);
+            Clock.RemoveTimer(OnTimerReached);
             Stopped(result);
         }
     }
