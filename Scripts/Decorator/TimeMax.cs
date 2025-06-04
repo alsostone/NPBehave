@@ -1,13 +1,15 @@
-﻿
+﻿using MemoryPack;
+
 namespace NPBehave
 {
-    public class TimeMax : Decorator
+    [MemoryPackable]
+    public partial class TimeMax : Decorator
     {
-        private float limit = 0.0f;
-        private float randomVariation;
-        private bool waitForChildButFailOnLimitReached = false;
-        private bool isLimitReached = false;
-
+        [MemoryPackInclude] private readonly float limit = 0.0f;
+        [MemoryPackInclude] private readonly float randomVariation;
+        [MemoryPackInclude] private readonly bool waitForChildButFailOnLimitReached = false;
+        [MemoryPackInclude] private bool isLimitReached = false;
+     
         public TimeMax(float limit, bool waitForChildButFailOnLimitReached, Node decoratee) : base("TimeMax", decoratee)
         {
             this.limit = limit;
@@ -15,6 +17,7 @@ namespace NPBehave
             this.waitForChildButFailOnLimitReached = waitForChildButFailOnLimitReached;
         }
 
+        [MemoryPackConstructor]
         public TimeMax(float limit, float randomVariation, bool waitForChildButFailOnLimitReached, Node decoratee) : base("TimeMax", decoratee)
         {
             this.limit = limit;

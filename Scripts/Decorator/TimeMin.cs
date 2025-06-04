@@ -1,15 +1,17 @@
-﻿
+﻿using MemoryPack;
+
 namespace NPBehave
 {
-    public class TimeMin : Decorator
+    [MemoryPackable]
+    public partial class TimeMin : Decorator
     {
-        private float limit = 0.0f;
-        private float randomVariation;
-        private bool waitOnFailure = false;
-        private bool isLimitReached = false;
-        private bool isDecorateeDone = false;
-        private bool isDecorateeSuccess = false;
-
+        [MemoryPackInclude] private readonly float limit = 0.0f;
+        [MemoryPackInclude] private readonly float randomVariation;
+        [MemoryPackInclude] private readonly bool waitOnFailure = false;
+        [MemoryPackInclude] private bool isLimitReached = false;
+        [MemoryPackInclude] private bool isDecorateeDone = false;
+        [MemoryPackInclude] private bool isDecorateeSuccess = false;
+        
         public TimeMin(float limit, Node decoratee) : base("TimeMin", decoratee)
         {
             this.limit = limit;
@@ -24,6 +26,7 @@ namespace NPBehave
             this.waitOnFailure = waitOnFailure;
         }
 
+        [MemoryPackConstructor]
         public TimeMin(float limit, float randomVariation, bool waitOnFailure, Node decoratee) : base("TimeMin", decoratee)
         {
             this.limit = limit;

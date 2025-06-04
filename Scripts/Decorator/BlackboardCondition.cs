@@ -1,51 +1,31 @@
-﻿
-using System;
+﻿using System;
+using MemoryPack;
 
 namespace NPBehave
 {
-    public class BlackboardCondition<T> : ObservingDecorator where T : IComparable<T>
+    [MemoryPackable]
+    public partial class BlackboardCondition<T> : ObservingDecorator where T : IComparable<T>
     {
-        private string key;
-        private T value;
-        private Operator op;
+        [MemoryPackInclude] private readonly string key;
+        [MemoryPackInclude] private readonly T value;
+        [MemoryPackInclude] private readonly Operator op;
 
-        public string Key
-        {
-            get
-            {
-                return key;
-            }
-        }
+        [MemoryPackIgnore] public string Key => key;
+        [MemoryPackIgnore] public T Value => value;
+        [MemoryPackIgnore] public Operator Operator => op;
 
-        public T Value
-        {
-            get
-            {
-                return value;
-            }
-        }
-
-        public Operator Operator
-        {
-            get
-            {
-                return op;
-            }
-        }
-
+        [MemoryPackConstructor]
         public BlackboardCondition(string key, Operator op, T value, Stops stopsOnChange, Node decoratee) : base("BlackboardCondition", stopsOnChange, decoratee)
         {
             this.op = op;
             this.key = key;
             this.value = value;
-            this.stopsOnChange = stopsOnChange;
         }
         
         public BlackboardCondition(string key, Operator op, Stops stopsOnChange, Node decoratee) : base("BlackboardCondition", stopsOnChange, decoratee)
         {
             this.op = op;
             this.key = key;
-            this.stopsOnChange = stopsOnChange;
         }
 
 

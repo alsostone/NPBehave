@@ -1,9 +1,11 @@
-﻿namespace NPBehave
+﻿using MemoryPack;
+
+namespace NPBehave
 {
     public abstract class Service : Decorator
     {
-        private float interval = -1.0f;
-        private float randomVariation;
+        [MemoryPackInclude] protected readonly float interval = -1.0f;
+        [MemoryPackInclude] protected readonly float randomVariation;
 
         protected Service(float interval, float randomVariation, Node decoratee) : base("Service", decoratee)
         {
@@ -33,7 +35,7 @@
             }
             else if (randomVariation <= 0f)
             {
-                this.Clock.AddTimer(this.interval, -1, OnService);
+                Clock.AddTimer(this.interval, -1, OnService);
                 OnService();
             }
             else
@@ -68,7 +70,7 @@
         private void InvokeServiceMethodWithRandomVariation()
         {
             OnService();
-            this.Clock.AddTimer(interval, randomVariation, 0, InvokeServiceMethodWithRandomVariation);
+            Clock.AddTimer(interval, randomVariation, 0, InvokeServiceMethodWithRandomVariation);
         }
         
         protected abstract void OnService();

@@ -1,4 +1,6 @@
 ﻿
+using MemoryPack;
+
 namespace NPBehave
 {
     public enum Result
@@ -18,7 +20,7 @@ namespace NPBehave
 
     public abstract class ActionRequest : Task
     {
-        private bool bWasBlocked = false;
+        [MemoryPackInclude] private bool bWasBlocked = false;
 
         protected ActionRequest() : base("ActionRequest")
         {

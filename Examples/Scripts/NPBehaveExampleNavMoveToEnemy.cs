@@ -47,7 +47,7 @@ public class NPBehaveExampleNavMoveToEnemy : MonoBehaviour
     {
         // we always need a root node
         var transform1 = transform;
-        return new Root(
+        return new Root(UnityContext.GetClock(),
 
             // kick up our service to update the "playerDistance" and "playerPos" Blackboard values every 125 milliseconds
             new UpdateService(transform1, 0.125f,

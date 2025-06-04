@@ -1,9 +1,12 @@
-﻿namespace NPBehave
+﻿using MemoryPack;
+
+namespace NPBehave
 {
-    public class WaitBlackboardKey : Task
+    [MemoryPackable]
+    public partial class WaitBlackboardKey : Task
     {
-        private readonly string blackboardKey = null;
-        private readonly float randomVariance;
+        [MemoryPackInclude] private readonly string blackboardKey = null;
+        [MemoryPackInclude] private readonly float randomVariance;
         
         public WaitBlackboardKey(string blackboardKey, float randomVariance = 0f) : base("WaitBlackboardKey")
         {

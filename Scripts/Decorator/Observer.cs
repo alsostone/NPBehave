@@ -1,8 +1,9 @@
-using System;
+using MemoryPack;
 
 namespace NPBehave
 {
-    public class Observer : Decorator
+    [MemoryPackable]
+    public partial class Observer : Decorator
     {
         public Observer(Node decoratee) : base("Observer", decoratee)
         {

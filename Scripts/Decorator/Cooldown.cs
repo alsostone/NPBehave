@@ -1,16 +1,17 @@
-﻿
+﻿using MemoryPack;
+
 namespace NPBehave
 {
-
-    public class Cooldown : Decorator
+    [MemoryPackable]
+    public partial class Cooldown : Decorator
     {
-        private bool startAfterDecoratee = false;
-        private bool resetOnFailiure = false;
-	    private bool failOnCooldown = false;
-        private float cooldownTime = 0.0f;
-        private float randomVariation = 0.05f;
-        private bool isReady = true;
-
+        [MemoryPackInclude] private bool startAfterDecoratee = false;
+        [MemoryPackInclude] private bool resetOnFailiure = false;
+	    [MemoryPackInclude] private bool failOnCooldown = false;
+        [MemoryPackInclude] private float cooldownTime = 0.0f;
+        [MemoryPackInclude] private float randomVariation = 0.05f;
+        [MemoryPackInclude] private bool isReady = true;
+        
         /// <summary>
         /// The Cooldown decorator ensures that the branch can not be started twice within the given cooldown time.
         /// 
@@ -28,6 +29,7 @@ namespace NPBehave
         /// <param name="resetOnFailiure">If set to <c>true</c> the timer will be reset in case the underlying node fails.</param>
         /// <param name="failOnCooldown">If currently on cooldown and this parameter is set to <c>true</c>, the decorator will immmediately fail instead of waiting for the cooldown.</param>
         /// <param name="decoratee">Decoratee node.</param>
+        [MemoryPackConstructor]
         public Cooldown(float cooldownTime, float randomVariation, bool startAfterDecoratee, bool resetOnFailiure, bool failOnCooldown, Node decoratee) : base("TimeCooldown", decoratee)
         {
         	this.startAfterDecoratee = startAfterDecoratee;

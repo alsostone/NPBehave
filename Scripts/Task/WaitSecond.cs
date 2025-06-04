@@ -1,10 +1,14 @@
-﻿namespace NPBehave
+﻿using MemoryPack;
+
+namespace NPBehave
 {
-    public class WaitSecond : Task
+    [MemoryPackable]
+    public partial class WaitSecond : Task
     {
-        private readonly float seconds;
-        private readonly float randomVariance;
+        [MemoryPackInclude] private readonly float seconds;
+        [MemoryPackInclude] private readonly float randomVariance;
         
+        [MemoryPackConstructor]
         public WaitSecond(float seconds, float randomVariance) : base("WaitSecond")
         {
             this.seconds = seconds;

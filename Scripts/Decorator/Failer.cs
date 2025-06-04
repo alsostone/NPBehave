@@ -1,6 +1,9 @@
-﻿namespace NPBehave
+﻿using MemoryPack;
+
+namespace NPBehave
 {
-    public class Failer : Decorator
+    [MemoryPackable]
+    public partial class Failer : Decorator
     {
         public Failer(Node decoratee) : base("Failer", decoratee)
         {

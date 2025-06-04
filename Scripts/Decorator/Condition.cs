@@ -1,12 +1,12 @@
-﻿using System;
+﻿using MemoryPack;
 
 namespace NPBehave
 {
     public abstract class Condition : ObservingDecorator
     {
-        private float checkInterval;
-        private float checkVariance;
-
+        [MemoryPackInclude] protected float checkInterval;
+        [MemoryPackInclude] protected float checkVariance;
+        
         protected Condition(Node decoratee) : base("Condition", Stops.NONE, decoratee)
         {
             this.checkInterval = 0.0f;

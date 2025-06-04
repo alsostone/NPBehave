@@ -1,8 +1,10 @@
-﻿namespace NPBehave
+﻿using MemoryPack;
+
+namespace NPBehave
 {
     public abstract class BlackboardQuery : ObservingDecorator
     {
-        private readonly string[] keys;
+        [MemoryPackInclude] protected readonly string[] keys;
 
         protected BlackboardQuery(string[] keys, Stops stopsOnChange, Node decoratee) : base("BlackboardQuery", stopsOnChange, decoratee)
         {

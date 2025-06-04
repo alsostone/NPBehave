@@ -1,8 +1,10 @@
-﻿namespace NPBehave
+﻿using MemoryPack;
+
+namespace NPBehave
 {
     public abstract class WaitCalc : Task
     {
-        private readonly float randomVariance;
+        [MemoryPackInclude] private readonly float randomVariance;
         
         protected WaitCalc(float randomVariance = 0f) : base("WaitCalc")
         {

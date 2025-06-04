@@ -1,9 +1,11 @@
-﻿
+﻿using MemoryPack;
+
 namespace NPBehave
 {
-    public class Sequence : Composite
+    [MemoryPackable]
+    public partial class Sequence : Composite
     {
-        private int currentIndex = -1;
+        [MemoryPackInclude] private int currentIndex = -1;
 
         public Sequence(params Node[] children) : base("Sequence", children)
         {

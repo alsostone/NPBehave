@@ -1,46 +1,29 @@
-﻿
+﻿using MemoryPack;
+
 namespace NPBehave
 {
     public class Root : Decorator
     {
-        private Blackboard blackboard;
-        public Blackboard RootBlackboard
-        {
-            get
-            {
-                return blackboard;
-            }
-        }
+        private readonly Blackboard blackboard;
+        private readonly Clock clock;
         
-        private Clock clock;
-        public Clock RootClock
-        {
-            get
-            {
-                return clock;
-            }
-        }
+        [MemoryPackIgnore] public Blackboard RootBlackboard => blackboard;
+        [MemoryPackIgnore] public Clock RootClock => clock;
 
 #if UNITY_EDITOR
-        public int TotalNumStartCalls = 0;
-        public int TotalNumStopCalls = 0;
-        public int TotalNumStoppedCalls = 0;
+        [MemoryPackIgnore] public int TotalNumStartCalls = 0;
+        [MemoryPackIgnore] public int TotalNumStopCalls = 0;
+        [MemoryPackIgnore] public int TotalNumStoppedCalls = 0;
 #endif
 
-        public Root(Node decoratee) : base("Root", decoratee)
+        public Root(Clock clock, Node decoratee) : base("Root", decoratee)
         {
-            this.clock = UnityContext.GetClock();
-            this.blackboard = new Blackboard(this.clock);
-            this.SetRoot(this);
-        }
-        
-        public Root(Blackboard blackboard, Node decoratee) : base("Root", decoratee)
-        {
-            this.blackboard = blackboard;
-            this.clock = UnityContext.GetClock();
+            this.blackboard = new Blackboard(clock);
+            this.clock = clock;
             this.SetRoot(this);
         }
 
+        [MemoryPackConstructor]
         public Root(Blackboard blackboard, Clock clock, Node decoratee) : base("Root", decoratee)
         {
             this.blackboard = blackboard;
@@ -48,7 +31,7 @@ namespace NPBehave
             this.SetRoot(this);
         }
 
-        public override void SetRoot(Root rootNode)
+        public sealed override void SetRoot(Root rootNode)
         {
             base.SetRoot(rootNode);
             this.Decoratee.SetRoot(rootNode);
@@ -77,7 +60,7 @@ namespace NPBehave
             if (!IsStopRequested)
             {
                 // wait one tick, to prevent endless recursions
-                this.clock.AddTimer(0, 0, this.Decoratee.Start);
+                Clock.AddTimer(0, 0, this.Decoratee.Start);
             }
             else
             {

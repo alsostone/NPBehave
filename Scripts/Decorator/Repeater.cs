@@ -1,12 +1,16 @@
-﻿namespace NPBehave
-{
-    public class Repeater : Decorator
-    {
-        private int loopCount = -1;
-        private int currentLoop;
+﻿using MemoryPack;
 
+namespace NPBehave
+{
+    [MemoryPackable]
+    public partial class Repeater : Decorator
+    {
+        [MemoryPackInclude] private readonly int loopCount = -1;
+        [MemoryPackInclude] private int currentLoop;
+        
         /// <param name="loopCount">number of times to execute the decoratee. Set to -1 to repeat forever, be careful with endless loops!</param>
         /// <param name="decoratee">Decorated Node</param>
+        [MemoryPackConstructor]
         public Repeater(int loopCount, Node decoratee) : base("Repeater", decoratee)
         {
             this.loopCount = loopCount;
@@ -54,7 +58,7 @@
                 }
                 else
                 {
-                    this.Clock.AddTimer(0, 0, RestartDecoratee);
+                    Clock.AddTimer(0, 0, RestartDecoratee);
                 }
             }
             else

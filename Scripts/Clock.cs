@@ -1,9 +1,10 @@
 using System.Collections.Generic;
+using MemoryPack;
 
 namespace NPBehave
 {
-
-    public class Clock
+    [MemoryPackable]
+    public partial class Clock
     {
         private List<System.Action> updateObservers = new List<System.Action>();
         private Dictionary<System.Action, Timer> timers = new Dictionary<System.Action, Timer>();

@@ -1,12 +1,12 @@
-﻿using System;
+﻿using MemoryPack;
 
 namespace NPBehave
 {
     public abstract class WaitForCondition : Decorator
     {
-        private float checkInterval;
-        private float checkVariance;
-
+        [MemoryPackInclude] protected readonly float checkInterval;
+        [MemoryPackInclude] protected readonly float checkVariance;
+        
         protected WaitForCondition(float checkInterval, float randomVariance, Node decoratee) : base("WaitForCondition", decoratee)
         {
             this.checkInterval = checkInterval;

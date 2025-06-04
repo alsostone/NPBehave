@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using MemoryPack;
 
 namespace NPBehave
 {
-    public class Blackboard
+    [MemoryPackable(GenerateType.CircularReference)]
+    public partial class Blackboard
     {
         public enum Type
         {
@@ -26,55 +28,52 @@ namespace NPBehave
         private Clock clock;
         private Dictionary<string, object> data = new Dictionary<string, object>();
         private Dictionary<string, List<System.Action<Type, object>>> observers = new Dictionary<string, List<System.Action<Type, object>>>();
-        private bool isNotifiyng = false;
+        private bool isNotifying = false;
         private Dictionary<string, List<System.Action<Type, object>>> addObservers = new Dictionary<string, List<System.Action<Type, object>>>();
         private Dictionary<string, List<System.Action<Type, object>>> removeObservers = new Dictionary<string, List<System.Action<Type, object>>>();
         private List<Notification> notifications = new List<Notification>();
         private List<Notification> notificationsDispatch = new List<Notification>();
-        private Blackboard parentBlackboard;
+        private Blackboard parent;
         private HashSet<Blackboard> children = new HashSet<Blackboard>();
-
+        
+        [MemoryPackConstructor]
+        private Blackboard() {}
+        
         public Blackboard(Blackboard parent, Clock clock)
         {
             this.clock = clock;
-            this.parentBlackboard = parent;
+            this.parent = parent;
         }
         public Blackboard(Clock clock)
         {
-            this.parentBlackboard = null;
+            this.parent = null;
             this.clock = clock;
         }
 
         public void Enable()
         {
-            if (this.parentBlackboard != null)
+            if (this.parent != null)
             {
-                this.parentBlackboard.children.Add(this);
+                this.parent.children.Add(this);
             }
         }
 
         public void Disable()
         {
-            if (this.parentBlackboard != null)
+            if (this.parent != null)
             {
-                this.parentBlackboard.children.Remove(this);
+                this.parent.children.Remove(this);
             }
             if (this.clock != null)
             {
-                this.clock.RemoveTimer(this.NotifiyObservers);
+                this.clock.RemoveTimer(this.NotifyObservers);
             }
         }
 
         public object this[string key]
         {
-            get
-            {
-                return Get(key);
-            }
-            set
-            {
-                Set(key, value);
-            }
+            get => Get(key);
+            set => Set(key, value);
         }
 
         public void Set(string key)
@@ -87,9 +86,9 @@ namespace NPBehave
 
         public void Set(string key, object value)
         {
-            if (this.parentBlackboard != null && this.parentBlackboard.Isset(key))
+            if (this.parent != null && this.parent.Isset(key))
             {
-                this.parentBlackboard.Set(key, value);
+                this.parent.Set(key, value);
             }
             else
             {
@@ -97,7 +96,7 @@ namespace NPBehave
                 {
                     this.data[key] = value;
                     this.notifications.Add(new Notification(key, Type.ADD, value));
-                    this.clock.AddTimer(0f, 0, NotifiyObservers);
+                    this.clock.AddTimer(0f, 0, NotifyObservers);
                 }
                 else
                 {
@@ -105,7 +104,7 @@ namespace NPBehave
                     {
                         this.data[key] = value;
                         this.notifications.Add(new Notification(key, Type.CHANGE, value));
-                        this.clock.AddTimer(0f, 0, NotifiyObservers);
+                        this.clock.AddTimer(0f, 0, NotifyObservers);
                     }
                 }
             }
@@ -117,7 +116,7 @@ namespace NPBehave
             {
                 this.data.Remove(key);
                 this.notifications.Add(new Notification(key, Type.REMOVE, null));
-                this.clock.AddTimer(0f, 0, NotifiyObservers);
+                this.clock.AddTimer(0f, 0, NotifyObservers);
             }
         }
         
@@ -137,9 +136,9 @@ namespace NPBehave
             {
                 return data[key];
             }
-            else if (this.parentBlackboard != null)
+            else if (this.parent != null)
             {
-                return this.parentBlackboard.Get(key);
+                return this.parent.Get(key);
             }
             else
             {
@@ -149,13 +148,13 @@ namespace NPBehave
 
         public bool Isset(string key)
         {
-            return this.data.ContainsKey(key) || (this.parentBlackboard != null && this.parentBlackboard.Isset(key));
+            return this.data.ContainsKey(key) || (this.parent != null && this.parent.Isset(key));
         }
 
         public void AddObserver(string key, System.Action<Type, object> observer)
         {
             List<System.Action<Type, object>> observers = GetObserverList(this.observers, key);
-            if (!isNotifiyng)
+            if (!isNotifying)
             {
                 if (!observers.Contains(observer))
                 {
@@ -184,7 +183,7 @@ namespace NPBehave
         public void RemoveObserver(string key, System.Action<Type, object> observer)
         {
             List<System.Action<Type, object>> observers = GetObserverList(this.observers, key);
-            if (!isNotifiyng)
+            if (!isNotifying)
             {
                 if (observers.Contains(observer))
                 {
@@ -209,16 +208,15 @@ namespace NPBehave
                 }
             }
         }
-
-
+        
 #if UNITY_EDITOR
-        public List<string> Keys
+        [MemoryPackIgnore] public List<string> Keys
         {
             get
             {
-                if (this.parentBlackboard != null)
+                if (this.parent != null)
                 {
-                    List<string> keys = this.parentBlackboard.Keys;
+                    List<string> keys = this.parent.Keys;
                     keys.AddRange(data.Keys);
                     return keys;
                 }
@@ -228,8 +226,7 @@ namespace NPBehave
                 }
             }
         }
-
-        public int NumObservers
+        [MemoryPackIgnore] public int NumObservers
         {
             get
             {
@@ -242,9 +239,8 @@ namespace NPBehave
             }
         }
 #endif
-
-
-        private void NotifiyObservers()
+        
+        private void NotifyObservers()
         {
             if (notifications.Count == 0)
             {
@@ -256,16 +252,15 @@ namespace NPBehave
             foreach (Blackboard child in children)
             {
                 child.notifications.AddRange(notifications);
-                child.clock.AddTimer(0f, 0, child.NotifiyObservers);
+                child.clock.AddTimer(0f, 0, child.NotifyObservers);
             }
             notifications.Clear();
 
-            isNotifiyng = true;
+            isNotifying = true;
             foreach (Notification notification in notificationsDispatch)
             {
                 if (!this.observers.ContainsKey(notification.key))
                 {
-                    //                Debug.Log("1 do not notify for key:" + notification.key + " value: " + notification.value);
                     continue;
                 }
 
@@ -294,7 +289,7 @@ namespace NPBehave
             this.addObservers.Clear();
             this.removeObservers.Clear();
 
-            isNotifiyng = false;
+            isNotifying = false;
         }
 
         private List<System.Action<Type, object>> GetObserverList(Dictionary<string, List<System.Action<Type, object>>> target, string key)

@@ -1,11 +1,12 @@
-﻿namespace NPBehave
-{
+﻿using MemoryPack;
 
+namespace NPBehave
+{
     public abstract class Decorator : Container
     {
-        protected Node Decoratee;
+        [MemoryPackInclude] protected Node Decoratee;
 
-        public Decorator(string name, Node decoratee) : base(name)
+        protected Decorator(string name, Node decoratee) : base(name)
         {
             this.Decoratee = decoratee;
             this.Decoratee.SetParent(this);
@@ -19,7 +20,7 @@
 
 
 #if UNITY_EDITOR
-        public override Node[] DebugChildren
+        [MemoryPackIgnore] public override Node[] DebugChildren
         {
             get
             {

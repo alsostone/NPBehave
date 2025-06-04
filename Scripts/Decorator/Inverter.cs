@@ -1,6 +1,9 @@
-﻿namespace NPBehave
+﻿using MemoryPack;
+
+namespace NPBehave
 {
-    public class Inverter : Decorator
+    [MemoryPackable]
+    public partial class Inverter : Decorator
     {
         public Inverter(Node decoratee) : base("Inverter", decoratee)
         {

@@ -1,8 +1,9 @@
-﻿using System.Collections;
+﻿using MemoryPack;
 
 namespace NPBehave
 {
-    public class RandomSelector : Composite
+    [MemoryPackable]
+    public partial class RandomSelector : Composite
     {
         static System.Random rng = new System.Random();
 
@@ -13,8 +14,8 @@ namespace NPBehave
         }
 #endif
 
-        private int currentIndex = -1;
-        private int[] randomizedOrder;
+        [MemoryPackInclude] private int currentIndex = -1;
+        [MemoryPackInclude] private int[] randomizedOrder;
 
         public RandomSelector(params Node[] children) : base("Random Selector", children)
         {

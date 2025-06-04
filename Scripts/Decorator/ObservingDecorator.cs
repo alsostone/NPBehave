@@ -1,10 +1,11 @@
-﻿
+﻿using MemoryPack;
+
 namespace NPBehave
 {
     public abstract class ObservingDecorator : Decorator
     {
-        protected Stops stopsOnChange;
-        private bool isObserving;
+        [MemoryPackInclude] protected readonly Stops stopsOnChange;
+        [MemoryPackInclude] protected bool isObserving;
 
         protected ObservingDecorator(string name, Stops stopsOnChange, Node decoratee) : base(name, decoratee)
         {
@@ -66,7 +67,6 @@ namespace NPBehave
             {
                 if (stopsOnChange == Stops.SELF || stopsOnChange == Stops.BOTH || stopsOnChange == Stops.IMMEDIATE_RESTART)
                 {
-                    // Debug.Log( this.key + " stopped self ");
                     this.Stop();
                 }
             }
@@ -74,7 +74,6 @@ namespace NPBehave
             {
                 if (stopsOnChange == Stops.LOWER_PRIORITY || stopsOnChange == Stops.BOTH || stopsOnChange == Stops.IMMEDIATE_RESTART || stopsOnChange == Stops.LOWER_PRIORITY_IMMEDIATE_RESTART)
                 {
-                    // Debug.Log( this.key + " stopped other ");
                     Container parentNode = this.ParentNode;
                     Node childNode = this;
                     while (parentNode != null && !(parentNode is Composite))

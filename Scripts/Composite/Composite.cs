@@ -1,11 +1,12 @@
-﻿
+﻿using MemoryPack;
+
 namespace NPBehave
 {
     public abstract class Composite : Container
     {
-        protected Node[] Children;
+        [MemoryPackInclude] protected Node[] Children;
 
-        public Composite(string name, Node[] children) : base(name)
+        protected Composite(string name, Node[] children) : base(name)
         {
             this.Children = children;
             foreach (Node node in Children)
@@ -25,7 +26,7 @@ namespace NPBehave
 
 
 #if UNITY_EDITOR
-        public override Node[] DebugChildren
+        [MemoryPackIgnore] public override Node[] DebugChildren
         {
             get
             {
