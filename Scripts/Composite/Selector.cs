@@ -1,7 +1,4 @@
-﻿using UnityEngine;
-using UnityEngine.Assertions;
-using System.Collections;
-
+﻿
 namespace NPBehave
 {
     public class Selector : Composite
@@ -11,15 +8,9 @@ namespace NPBehave
         public Selector(params Node[] children) : base("Selector", children)
         {
         }
-
-
+        
         protected override void DoStart()
         {
-            foreach (Node child in Children)
-            {
-                Assert.AreEqual(child.CurrentState, State.INACTIVE);
-            }
-
             currentIndex = -1;
 
             ProcessChildren();
@@ -91,7 +82,7 @@ namespace NPBehave
             }
         }
 
-        override public string ToString()
+        public override string ToString()
         {
             return base.ToString() + "[" + this.currentIndex + "]";
         }

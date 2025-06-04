@@ -11,7 +11,7 @@
             this.Decoratee.SetParent(this);
         }
 
-        override public void SetRoot(Root rootNode)
+        public override void SetRoot(Root rootNode)
         {
             base.SetRoot(rootNode);
             Decoratee.SetRoot(rootNode);

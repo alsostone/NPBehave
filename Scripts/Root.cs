@@ -1,5 +1,4 @@
-﻿using UnityEngine.Assertions;
-
+﻿
 namespace NPBehave
 {
     public class Root : Decorator
@@ -16,8 +15,7 @@ namespace NPBehave
                 return blackboard;
             }
         }
-
-
+        
         private Clock clock;
         public override Clock Clock
         {
@@ -58,19 +56,17 @@ namespace NPBehave
 
         public override void SetRoot(Root rootNode)
         {
-            Assert.AreEqual(this, rootNode);
             base.SetRoot(rootNode);
             this.mainNode.SetRoot(rootNode);
         }
-
-
-        override protected void DoStart()
+        
+        protected override void DoStart()
         {
             this.blackboard.Enable();
             this.mainNode.Start();
         }
 
-        override protected void DoStop()
+        protected override void DoStop()
         {
             if (this.mainNode.IsActive)
             {
@@ -81,9 +77,8 @@ namespace NPBehave
                 this.clock.RemoveTimer(this.mainNode.Start);
             }
         }
-
-
-        override protected void DoChildStopped(Node node, bool success)
+        
+        protected override void DoChildStopped(Node node, bool success)
         {
             if (!IsStopRequested)
             {

@@ -29,12 +29,12 @@ namespace NPBehave
             this.checkVariance = randomVariance;
         }
 
-        override protected void StartObserving()
+        protected override void StartObserving()
         {
             this.RootNode.Clock.AddTimer(checkInterval, checkVariance, -1, Evaluate);
         }
 
-        override protected void StopObserving()
+        protected override void StopObserving()
         {
             this.RootNode.Clock.RemoveTimer(Evaluate);
         }

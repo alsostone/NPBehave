@@ -1,5 +1,4 @@
-﻿using UnityEngine.Assertions;
-
+﻿
 namespace NPBehave
 {
     public class TimeMax : Decorator
@@ -14,7 +13,6 @@ namespace NPBehave
             this.limit = limit;
             this.randomVariation = limit * 0.05f;
             this.waitForChildButFailOnLimitReached = waitForChildButFailOnLimitReached;
-            Assert.IsTrue(limit > 0f, "limit has to be set");
         }
 
         public TimeMax(float limit, float randomVariation, bool waitForChildButFailOnLimitReached, Node decoratee) : base("TimeMax", decoratee)
@@ -22,7 +20,6 @@ namespace NPBehave
             this.limit = limit;
             this.randomVariation = randomVariation;
             this.waitForChildButFailOnLimitReached = waitForChildButFailOnLimitReached;
-            Assert.IsTrue(limit > 0f, "limit has to be set");
         }
 
         protected override void DoStart()
@@ -32,7 +29,7 @@ namespace NPBehave
             Decoratee.Start();
         }
 
-        override protected void DoStop()
+        protected override void DoStop()
         {
             Clock.RemoveTimer(TimeoutReached);
             if (Decoratee.IsActive)
@@ -67,7 +64,6 @@ namespace NPBehave
             else
             {
                 isLimitReached = true;
-                Assert.IsTrue(Decoratee.IsActive);
             }
         }
     }

@@ -1,7 +1,4 @@
-﻿using UnityEngine;
-using System.Collections;
-using UnityEngine.Assertions;
-
+﻿
 namespace NPBehave
 {
     public abstract class ObservingDecorator : Decorator
@@ -36,14 +33,13 @@ namespace NPBehave
             }
         }
 
-        override protected void DoStop()
+        protected override void DoStop()
         {
             Decoratee.Stop();
         }
 
         protected override void DoChildStopped(Node child, bool result)
         {
-            Assert.AreNotEqual(this.CurrentState, State.INACTIVE);
             if (stopsOnChange == Stops.NONE || stopsOnChange == Stops.SELF)
             {
                 if (isObserving)
@@ -55,7 +51,7 @@ namespace NPBehave
             Stopped(result);
         }
 
-        override protected void DoParentCompositeStopped(Composite parentComposite)
+        protected override void DoParentCompositeStopped(Composite parentComposite)
         {
             if (isObserving)
             {
@@ -85,12 +81,6 @@ namespace NPBehave
                     {
                         childNode = parentNode;
                         parentNode = parentNode.ParentNode;
-                    }
-                    Assert.IsNotNull(parentNode, "NTBtrStops is only valid when attached to a parent composite");
-                    Assert.IsNotNull(childNode);
-                    if (parentNode is Parallel)
-                    {
-                        Assert.IsTrue(stopsOnChange == Stops.IMMEDIATE_RESTART, "On Parallel Nodes all children have the same priority, thus Stops.LOWER_PRIORITY or Stops.BOTH are unsupported in this context!");
                     }
 
                     if (stopsOnChange == Stops.IMMEDIATE_RESTART || stopsOnChange == Stops.LOWER_PRIORITY_IMMEDIATE_RESTART)

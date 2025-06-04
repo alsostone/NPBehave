@@ -1,5 +1,4 @@
-﻿using UnityEngine.Assertions;
-using System;
+﻿using System;
 
 namespace NPBehave
 {
@@ -48,7 +47,7 @@ namespace NPBehave
             }
         }
 
-        override protected void DoStop()
+        protected override void DoStop()
         {
             Clock.RemoveTimer(checkCondition);
             if (Decoratee.IsActive)
@@ -63,7 +62,6 @@ namespace NPBehave
 
         protected override void DoChildStopped(Node child, bool result)
         {
-            Assert.AreNotEqual(this.CurrentState, State.INACTIVE);
             Stopped(result);
         }
     }

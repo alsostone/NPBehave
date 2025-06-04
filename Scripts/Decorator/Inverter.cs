@@ -11,7 +11,7 @@
             Decoratee.Start();
         }
 
-        override protected void DoStop()
+        protected override void DoStop()
         {
             Decoratee.Stop();
         }

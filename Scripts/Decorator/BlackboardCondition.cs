@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-
+﻿
 namespace NPBehave
 {
     public class BlackboardCondition : ObservingDecorator
@@ -48,12 +47,12 @@ namespace NPBehave
         }
 
 
-        override protected void StartObserving()
+        protected override void StartObserving()
         {
             this.RootNode.Blackboard.AddObserver(key, onValueChanged);
         }
 
-        override protected void StopObserving()
+        protected override void StopObserving()
         {
             this.RootNode.Blackboard.RemoveObserver(key, onValueChanged);
         }
@@ -63,7 +62,7 @@ namespace NPBehave
             Evaluate();
         }
 
-        override protected bool IsConditionMet()
+        protected override bool IsConditionMet()
         {
             if (op == Operator.ALWAYS_TRUE)
             {
@@ -94,7 +93,6 @@ namespace NPBehave
                     }
                     else
                     {
-                        Debug.LogError("Type not compareable: " + o.GetType());
                         return false;
                     }
 
@@ -109,7 +107,6 @@ namespace NPBehave
                     }
                     else
                     {
-                        Debug.LogError("Type not compareable: " + o.GetType());
                         return false;
                     }
 
@@ -124,7 +121,6 @@ namespace NPBehave
                     }
                     else
                     {
-                        Debug.LogError("Type not compareable: " + o.GetType());
                         return false;
                     }
 
@@ -139,7 +135,6 @@ namespace NPBehave
                     }
                     else
                     {
-                        Debug.LogError("Type not compareable: " + o.GetType());
                         return false;
                     }
 
@@ -147,7 +142,7 @@ namespace NPBehave
             }
         }
 
-        override public string ToString()
+        public override string ToString()
         {
             return "(" + this.op + ") " + this.key + " ? " + this.value;
         }

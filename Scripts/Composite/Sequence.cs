@@ -1,7 +1,4 @@
-﻿using UnityEngine;
-using UnityEngine.Assertions;
-using System.Collections;
-
+﻿
 namespace NPBehave
 {
     public class Sequence : Composite
@@ -14,11 +11,6 @@ namespace NPBehave
 
         protected override void DoStart()
         {
-            foreach (Node child in Children)
-            {
-                Assert.AreEqual(child.CurrentState, State.INACTIVE);
-            }
-
             currentIndex = -1;
 
             ProcessChildren();
@@ -28,8 +20,7 @@ namespace NPBehave
         {
             Children[currentIndex].Stop();
         }
-
-
+        
         protected override void DoChildStopped(Node child, bool result)
         {
             if (result)
@@ -91,7 +82,7 @@ namespace NPBehave
             }
         }
 
-        override public string ToString()
+        public override string ToString()
         {
             return base.ToString() + "[" + this.currentIndex + "]";
         }

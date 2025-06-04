@@ -11,7 +11,7 @@
             this.query = query;
         }
 
-        override protected void StartObserving()
+        protected override void StartObserving()
         {
             foreach (string key in this.keys)
             {
@@ -19,7 +19,7 @@
             }
         }
 
-        override protected void StopObserving()
+        protected override void StopObserving()
         {
             foreach (string key in this.keys)
             {
@@ -37,7 +37,7 @@
             return this.query();
         }
 
-        override public string ToString()
+        public override string ToString()
         {
             string keys = "";
             foreach (string key in this.keys)

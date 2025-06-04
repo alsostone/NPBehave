@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using UnityEngine.Assertions;
 
 namespace NPBehave
 {
@@ -74,7 +73,6 @@ namespace NPBehave
                 }
             }
 
-			Assert.IsTrue(timer.used);
 			timer.delay = delay;
 			timer.randomVariance = randomVariance;
 			timer.repeat = repeat;
@@ -99,7 +97,6 @@ namespace NPBehave
                 }
                 if (this.addTimers.ContainsKey(action))
                 {
-                    Assert.IsTrue(this.addTimers[action].used);
                     this.addTimers[action].used = false;
                     this.addTimers.Remove(action);
                 }
@@ -242,15 +239,12 @@ namespace NPBehave
             {
                 if (this.timers.ContainsKey(action))
                 {
-                    Assert.AreNotEqual(this.timers[action], this.addTimers[action]);
                     this.timers[action].used = false;
                 }
-                Assert.IsTrue(this.addTimers[action].used);
                 this.timers[action] = this.addTimers[action];
             }
             foreach (System.Action action in this.removeTimers)
             {
-                Assert.IsTrue(this.timers[action].used);
                 timers[action].used = false;
                 this.timers.Remove(action);
             }

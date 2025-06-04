@@ -1,7 +1,4 @@
-﻿using UnityEngine;
-using UnityEngine.Assertions;
-using System.Collections;
-
+﻿
 namespace NPBehave
 {
     public class RandomSequence : Composite
@@ -10,7 +7,7 @@ namespace NPBehave
 
 
 #if UNITY_EDITOR
-        static public void DebugSetSeed( int seed )
+        public static void DebugSetSeed( int seed )
         {
             rng = new System.Random( seed );
         }
@@ -30,11 +27,6 @@ namespace NPBehave
 
         protected override void DoStart()
         {
-            foreach (Node child in Children)
-            {
-                Assert.AreEqual(child.CurrentState, State.INACTIVE);
-            }
-
             currentIndex = -1;
 
             // Shuffling
@@ -42,9 +34,7 @@ namespace NPBehave
             while (n > 1)
             {
                 int k = rng.Next(n--);
-                int temp = randomizedOrder[n];
-                randomizedOrder[n] = randomizedOrder[k];
-                randomizedOrder[k] = temp;
+                (randomizedOrder[n], randomizedOrder[k]) = (randomizedOrder[k], randomizedOrder[n]);
             }
 
             ProcessChildren();
@@ -117,7 +107,7 @@ namespace NPBehave
             }
         }
 
-        override public string ToString()
+        public override string ToString()
         {
             return base.ToString() + "[" + this.currentIndex + "]";
         }

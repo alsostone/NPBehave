@@ -30,7 +30,7 @@
             }
         }
 
-        override protected void DoStop()
+        protected override void DoStop()
         {
             this.Clock.RemoveTimer(restartDecoratee);
             

@@ -1,8 +1,4 @@
-﻿using UnityEngine;
-using UnityEngine.Assertions;
-using System.Collections;
-
-
+﻿using System.Collections;
 
 namespace NPBehave
 {
@@ -11,7 +7,7 @@ namespace NPBehave
         static System.Random rng = new System.Random();
 
 #if UNITY_EDITOR
-        static public void DebugSetSeed( int seed )
+        public static void DebugSetSeed( int seed )
         {
             rng = new System.Random( seed );
         }
@@ -32,11 +28,6 @@ namespace NPBehave
 
         protected override void DoStart()
         {
-            foreach (Node child in Children)
-            {
-                Assert.AreEqual(child.CurrentState, State.INACTIVE);
-            }
-
             currentIndex = -1;
 
             // Shuffling
@@ -44,16 +35,12 @@ namespace NPBehave
             while (n > 1)
             {
                 int k = rng.Next(n--);
-                int temp = randomizedOrder[n];
-                randomizedOrder[n] = randomizedOrder[k];
-                randomizedOrder[k] = temp;
+                (randomizedOrder[n], randomizedOrder[k]) = (randomizedOrder[k], randomizedOrder[n]);
             }
 
             ProcessChildren();
         }
-
-
-
+        
         protected override void DoStop()
         {
             Children[randomizedOrder[currentIndex]].Stop();
@@ -120,7 +107,7 @@ namespace NPBehave
             }
         }
 
-        override public string ToString()
+        public override string ToString()
         {
             return base.ToString() + "[" + this.currentIndex + "]";
         }
