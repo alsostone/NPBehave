@@ -8,9 +8,7 @@ public class NPBehaveExampleHelloWorldAI : MonoBehaviour
 
     void Start()
     {
-        behaviorTree = new Root(
-            new ActionLog("Hello World!")
-        );
+        behaviorTree = new Root(new ActionLog("Hello World!"));
         behaviorTree.Start();
     }
 }
