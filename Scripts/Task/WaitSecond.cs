@@ -31,23 +31,23 @@ namespace NPBehave
 
             if (randomVariance >= 0f)
             {
-                Clock.AddTimer(delay, randomVariance, 0, OnTimerReached);
+                Clock.AddTimer(delay, randomVariance, 0, Guid);
             }
             else
             {
-                Clock.AddTimer(delay, 0, OnTimerReached);
+                Clock.AddTimer(delay, 0, Guid);
             }
         }
 
         protected override void DoStop()
         {
-            Clock.RemoveTimer(OnTimerReached);
+            Clock.RemoveTimer(Guid);
             this.Stopped(false);
         }
 
-        private void OnTimerReached()
+        public override void OnTimerReached()
         {
-            Clock.RemoveTimer(OnTimerReached);
+            Clock.RemoveTimer(Guid);
             this.Stopped(true);
         }
     }

@@ -51,7 +51,7 @@ namespace NPBehave.Examples
             failedChecks = 0;
 
             Blackboard.AddObserver(blackboardKey, Guid);
-            Clock.AddTimer(updateFrequency, updateVariance, -1, OnTimerReached);
+            Clock.AddTimer(updateFrequency, updateVariance, -1, Guid);
 
             moveToBlackboardKey();
         }
@@ -66,7 +66,7 @@ namespace NPBehave.Examples
             moveToBlackboardKey();
         }
 
-        private void OnTimerReached()
+        public override void OnTimerReached()
         {
             moveToBlackboardKey();
         }
@@ -147,7 +147,7 @@ namespace NPBehave.Examples
         {
             agent.destination = agent.transform.position;
             Blackboard.RemoveObserver(blackboardKey, Guid);
-            Clock.RemoveTimer(OnTimerReached);
+            Clock.RemoveTimer(Guid);
             Stopped(result);
         }
     }

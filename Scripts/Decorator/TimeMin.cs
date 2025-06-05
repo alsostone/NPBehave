@@ -39,21 +39,20 @@ namespace NPBehave
             isDecorateeDone = false;
             isDecorateeSuccess = false;
             isLimitReached = false;
-            Clock.AddTimer(limit, randomVariation, 0, TimeoutReached);
+            Clock.AddTimer(limit, randomVariation, 0, Guid);
             Decoratee.Start();
         }
 
         protected override void DoStop()
         {
+            Clock.RemoveTimer(Guid);
             if (Decoratee.IsActive)
             {
-                Clock.RemoveTimer(TimeoutReached);
                 isLimitReached = true;
                 Decoratee.Stop();
             }
             else
             {
-                Clock.RemoveTimer(TimeoutReached);
                 Stopped(false);
             }
         }
@@ -64,12 +63,12 @@ namespace NPBehave
             isDecorateeSuccess = result;
             if (isLimitReached || (!result && !waitOnFailure))
             {
-                Clock.RemoveTimer(TimeoutReached);
+                Clock.RemoveTimer(Guid);
                 Stopped(isDecorateeSuccess);
             }
         }
 
-        private void TimeoutReached()
+        public override void OnTimerReached()
         {
             isLimitReached = true;
             if (isDecorateeDone)

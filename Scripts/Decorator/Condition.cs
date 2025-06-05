@@ -27,12 +27,17 @@ namespace NPBehave
 
         protected override void StartObserving()
         {
-            Clock.AddTimer(checkInterval, checkVariance, -1, Evaluate);
+            Clock.AddTimer(checkInterval, checkVariance, -1, Guid);
         }
 
         protected override void StopObserving()
         {
-            Clock.RemoveTimer(Evaluate);
+            Clock.RemoveTimer(Guid);
+        }
+
+        public override void OnTimerReached()
+        {
+            Evaluate();
         }
     }
 }

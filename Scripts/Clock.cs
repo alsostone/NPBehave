@@ -6,38 +6,37 @@ namespace NPBehave
     [MemoryPackable]
     public partial class Clock
     {
-        private List<System.Action> updateObservers = new List<System.Action>();
-        private Dictionary<System.Action, Timer> timers = new Dictionary<System.Action, Timer>();
-        private HashSet<System.Action> removeObservers = new HashSet<System.Action>();
-        private HashSet<System.Action> addObservers = new HashSet<System.Action>();
-        private HashSet<System.Action> removeTimers = new HashSet<System.Action>();
-        private Dictionary<System.Action, Timer> addTimers = new Dictionary<System.Action, Timer>();
-        private bool isInUpdate = false;
-
-        class Timer
+        private class Timer
         {
             public double scheduledTime = 0f;
             public int repeat = 0;
-            public bool used = false;
-			public double delay = 0f;
-			public float randomVariance = 0.0f;
+            public double delay = 0f;
+            public float randomVariance = 0.0f;
 
-			public void ScheduleAbsoluteTime(double elapsedTime)
-			{
-				scheduledTime = elapsedTime + delay - randomVariance * 0.5f + randomVariance * UnityEngine.Random.value;
-			}
+            public void ScheduleAbsoluteTime(double elapsedTime)
+            {
+                scheduledTime = elapsedTime + delay - randomVariance * 0.5f + randomVariance * UnityEngine.Random.value;
+            }
         }
-
-        private double elapsedTime = 0f;
-
-        private List<Timer> timerPool = new List<Timer>();
-        private int currentTimerPoolIndex = 0;
-
+        [MemoryPackInclude] private double elapsedTime = 0f;
+        [MemoryPackInclude] private bool isInUpdate = false;
+        
+        [MemoryPackInclude] private Dictionary<int, Timer> timers = new Dictionary<int, Timer>();
+        [MemoryPackInclude] private Dictionary<int, Timer> addTimers = new Dictionary<int, Timer>();
+        [MemoryPackInclude] private HashSet<int> removeTimers = new HashSet<int>();
+        
+        [MemoryPackInclude] private HashSet<int> updateObservers = new HashSet<int>();
+        [MemoryPackInclude] private HashSet<int> addObservers = new HashSet<int>();
+        [MemoryPackInclude] private HashSet<int> removeObservers = new HashSet<int>();
+        
+        [MemoryPackIgnore] public readonly Dictionary<int, Receiver> IdNodeMapping = new Dictionary<int, Receiver>();
+        [MemoryPackIgnore] private readonly Queue<Timer> timerPool = new Queue<Timer>();
+        
         /// <summary>Register a timer function</summary>
         /// <param name="time">time in milliseconds</param>
         /// <param name="repeat">number of times to repeat, set to -1 to repeat until unregistered.</param>
         /// <param name="action">method to invoke</param>
-        public void AddTimer(float time, int repeat, System.Action action)
+        public void AddTimer(float time, int repeat, int action)
         {
             AddTimer(time, 0f, repeat, action);
         }
@@ -47,16 +46,15 @@ namespace NPBehave
         /// <param name="randomVariance">deviate from time on a random basis</param>
         /// <param name="repeat">number of times to repeat, set to -1 to repeat until unregistered.</param>
         /// <param name="action">method to invoke</param>
-        public void AddTimer(float delay, float randomVariance, int repeat, System.Action action)
+        public void AddTimer(float delay, float randomVariance, int repeat, int action)
         {
-			
-			Timer timer = null;
+            Timer timer = null;
 
             if (!isInUpdate)
             {
                 if (!this.timers.ContainsKey(action))
                 {
-					this.timers[action] = getTimerFromPool();
+					this.timers[action] = GetTimerFromPool();
                 }
 				timer = this.timers[action];
             }
@@ -64,7 +62,7 @@ namespace NPBehave
             {
                 if (!this.addTimers.ContainsKey(action))
                 {
-					this.addTimers[action] = getTimerFromPool();
+					this.addTimers[action] = GetTimerFromPool();
                 }
 				timer = this.addTimers [action];
 
@@ -80,13 +78,13 @@ namespace NPBehave
 			timer.ScheduleAbsoluteTime(elapsedTime);
         }
 
-        public void RemoveTimer(System.Action action)
+        public void RemoveTimer(int action)
         {
             if (!isInUpdate)
             {
                 if (this.timers.ContainsKey(action))
                 {
-                    timers[action].used = false;
+                    timerPool.Enqueue(timers[action]);
                     this.timers.Remove(action);
                 }
             }
@@ -98,13 +96,13 @@ namespace NPBehave
                 }
                 if (this.addTimers.ContainsKey(action))
                 {
-                    this.addTimers[action].used = false;
+                    timerPool.Enqueue(addTimers[action]);
                     this.addTimers.Remove(action);
                 }
             }
         }
 
-        public bool HasTimer(System.Action action)
+        public bool HasTimer(int action)
         {
             if (!isInUpdate)
             {
@@ -129,7 +127,7 @@ namespace NPBehave
 
         /// <summary>Register a function that is called every frame</summary>
         /// <param name="action">function to invoke</param>
-        public void AddUpdateObserver(System.Action action)
+        public void AddUpdateObserver(int action)
         {
             if (!isInUpdate)
             {
@@ -148,7 +146,7 @@ namespace NPBehave
             }
         }
 
-        public void RemoveUpdateObserver(System.Action action)
+        public void RemoveUpdateObserver(int action)
         {
             if (!isInUpdate)
             {
@@ -167,7 +165,7 @@ namespace NPBehave
             }
         }
 
-        public bool HasUpdateObserver(System.Action action)
+        public bool HasUpdateObserver(int action)
         {
             if (!isInUpdate)
             {
@@ -193,19 +191,18 @@ namespace NPBehave
         public void Update(float deltaTime)
         {
             this.elapsedTime += deltaTime;
-
             this.isInUpdate = true;
 
-            foreach (System.Action action in updateObservers)
+            foreach (var action in updateObservers)
             {
                 if (!removeObservers.Contains(action))
                 {
-                    action.Invoke();
+                    IdNodeMapping[action].OnTimerReached();
                 }
             }
 
-            Dictionary<System.Action, Timer>.KeyCollection keys = timers.Keys;
-			foreach (System.Action callback in keys)
+            var keys = timers.Keys;
+			foreach (var callback in keys)
             {
                 if (this.removeTimers.Contains(callback))
                 {
@@ -223,30 +220,31 @@ namespace NPBehave
                     {
                         timer.repeat--;
                     }
-                    callback.Invoke();
+                    
+                    IdNodeMapping[callback].OnTimerReached();
 					timer.ScheduleAbsoluteTime(elapsedTime);
                 }
             }
 
-            foreach (System.Action action in this.addObservers)
+            foreach (var action in this.addObservers)
             {
                 this.updateObservers.Add(action);
             }
-            foreach (System.Action action in this.removeObservers)
+            foreach (var action in this.removeObservers)
             {
                 this.updateObservers.Remove(action);
             }
-            foreach (System.Action action in this.addTimers.Keys)
+            foreach (var action in this.addTimers.Keys)
             {
-                if (this.timers.ContainsKey(action))
+                if (this.timers.TryGetValue(action, out var timer))
                 {
-                    this.timers[action].used = false;
+                    timerPool.Enqueue(timer);
                 }
                 this.timers[action] = this.addTimers[action];
             }
-            foreach (System.Action action in this.removeTimers)
+            foreach (var action in this.removeTimers)
             {
-                timers[action].used = false;
+                timerPool.Enqueue(timers[action]);
                 this.timers.Remove(action);
             }
             this.addObservers.Clear();
@@ -256,65 +254,22 @@ namespace NPBehave
 
             this.isInUpdate = false;
         }
-
-        public int NumUpdateObservers
+        
+#if UNITY_EDITOR
+        [MemoryPackIgnore] public int NumUpdateObservers => updateObservers.Count;
+        [MemoryPackIgnore] public int NumTimers => timers.Count;
+        [MemoryPackIgnore] public double ElapsedTime => elapsedTime;
+        [MemoryPackIgnore] public int DebugPoolSize => this.timerPool.Count;
+#endif
+        
+        private Timer GetTimerFromPool()
         {
-            get
-            {
-                return updateObservers.Count;
-            }
-        }
-
-        public int NumTimers
-        {
-            get
-            {
-                return timers.Count;
-            }
-        }
-
-        public double ElapsedTime
-        {
-            get
-            {
-                return elapsedTime;
-            }
-        }
-
-        private Timer getTimerFromPool()
-        {
-            int i = 0;
-            int l = timerPool.Count;
-            Timer timer = null;
-            while (i < l)
-            {
-                int timerIndex = (i + currentTimerPoolIndex) % l;
-                if (!timerPool[timerIndex].used)
-                {
-                    currentTimerPoolIndex = timerIndex;
-                    timer = timerPool[timerIndex];
-                    break;
-                }
-                i++;
-            }
-
-            if (timer == null)
+            if (!timerPool.TryDequeue(out var timer))
             {
                 timer = new Timer();
-                currentTimerPoolIndex = 0;
-                timerPool.Add(timer);
             }
-
-            timer.used = true;
             return timer;
         }
 
-        public int DebugPoolSize
-        {
-            get
-            {
-                return this.timerPool.Count;
-            }
-        }
     }
 }

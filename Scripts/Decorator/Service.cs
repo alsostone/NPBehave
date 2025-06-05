@@ -11,36 +11,37 @@ namespace NPBehave
         {
             this.interval = interval;
             this.randomVariation = randomVariation;
-            this.Label = "" + (interval - randomVariation) + "..." + (interval + randomVariation) + "s";
+            Label = "" + (interval - randomVariation) + "..." + (interval + randomVariation) + "s";
         }
 
         protected Service(float interval, Node decoratee) : base("Service", decoratee)
         {
             this.interval = interval;
-            this.randomVariation = interval * 0.05f;
-            this.Label = "" + (interval - randomVariation) + "..." + (interval + randomVariation) + "s";
+            randomVariation = interval * 0.05f;
+            Label = "" + (interval - randomVariation) + "..." + (interval + randomVariation) + "s";
         }
 
         protected Service(Node decoratee) : base("Service", decoratee)
         {
-            this.Label = "every tick";
+            Label = "every tick";
         }
 
         protected override void DoStart()
         {
-            if (this.interval <= 0f)
+            if (interval <= 0f)
             {
-                this.Clock.AddUpdateObserver(OnService);
+                Clock.AddUpdateObserver(Guid);
                 OnService();
             }
             else if (randomVariation <= 0f)
             {
-                Clock.AddTimer(this.interval, -1, OnService);
+                Clock.AddTimer(interval, -1, Guid);
                 OnService();
             }
             else
             {
-                InvokeServiceMethodWithRandomVariation();
+                Clock.AddTimer(interval, randomVariation, 0, Guid);
+                OnService();
             }
             Decoratee.Start();
         }
@@ -52,25 +53,28 @@ namespace NPBehave
 
         protected override void DoChildStopped(Node child, bool result)
         {
-            if (this.interval <= 0f)
+            if (interval <= 0f)
             {
-                this.Clock.RemoveUpdateObserver(OnService);
+                Clock.RemoveUpdateObserver(Guid);
             }
             else if (randomVariation <= 0f)
             {
-                this.Clock.RemoveTimer(OnService);
+                Clock.RemoveTimer(Guid);
             }
             else
             {
-                this.Clock.RemoveTimer(InvokeServiceMethodWithRandomVariation);
+                Clock.RemoveTimer(Guid);
             }
             Stopped(result);
         }
 
-        private void InvokeServiceMethodWithRandomVariation()
+        public override void OnTimerReached()
         {
+            if (interval > 0f && randomVariation > 0f)
+            {
+                Clock.AddTimer(interval, randomVariation, 0, Guid);
+            }
             OnService();
-            Clock.AddTimer(interval, randomVariation, 0, InvokeServiceMethodWithRandomVariation);
         }
         
         protected abstract void OnService();

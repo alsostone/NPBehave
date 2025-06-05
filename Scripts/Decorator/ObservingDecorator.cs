@@ -12,7 +12,7 @@ namespace NPBehave
             this.stopsOnChange = stopsOnChange;
             this.isObserving = false;
         }
-
+        
         protected override void DoStart()
         {
             if (stopsOnChange != Stops.NONE)

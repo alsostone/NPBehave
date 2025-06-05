@@ -23,8 +23,7 @@ namespace NPBehave
                 node.SetRoot(rootNode);
             }
         }
-
-
+        
 #if UNITY_EDITOR
         [MemoryPackIgnore] public override Node[] DebugChildren
         {

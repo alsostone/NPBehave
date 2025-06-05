@@ -39,8 +39,9 @@ namespace NPBehave
             
             // 注册到黑板的意义：通过Guid找到该节点，后调用该节点的方法
             if (this.Guid < 0)
-                this.Guid = Blackboard.GetNextGuid();
+                this.Guid = ReceiverIdGenerator.GetNextGuid();
             Blackboard.IdNodeMapping.Add(this.Guid, this);
+            Clock.IdNodeMapping.Add(this.Guid, this);
         }
 
         public void SetParent(Container parent)

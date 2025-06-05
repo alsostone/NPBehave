@@ -1,4 +1,5 @@
-﻿using MemoryPack;
+﻿using System;
+using MemoryPack;
 
 namespace NPBehave
 {
@@ -50,7 +51,7 @@ namespace NPBehave
             }
             else
             {
-                this.clock.RemoveTimer(this.Decoratee.Start);
+                this.clock.RemoveTimer(Guid);
             }
         }
         
@@ -59,13 +60,18 @@ namespace NPBehave
             if (!IsStopRequested)
             {
                 // wait one tick, to prevent endless recursions
-                Clock.AddTimer(0, 0, this.Decoratee.Start);
+                Clock.AddTimer(0, 0, Guid);
             }
             else
             {
                 this.blackboard.Disable();
                 Stopped(success);
             }
+        }
+
+        public override void OnTimerReached()
+        {
+            this.Decoratee.Start();
         }
     }
 }

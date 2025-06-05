@@ -31,20 +31,20 @@ namespace NPBehave
             Result result = OnAction(Request.START);
             if (result == Result.PROGRESS)
             {
-                Clock.AddUpdateObserver(OnUpdate);
+                Clock.AddUpdateObserver(Guid);
             }
             else if (result == Result.BLOCKED)
             {
                 this.bWasBlocked = true;
-                Clock.AddUpdateObserver(OnUpdate);
+                Clock.AddUpdateObserver(Guid);
             }
             else
             {
                 this.Stopped(result == Result.SUCCESS);
             }
         }
-
-        private void OnUpdate()
+        
+        public override void OnTimerReached()
         {
             Result result = OnAction(bWasBlocked ? Request.START : Request.UPDATE);
             if (result == Result.BLOCKED)
@@ -57,7 +57,7 @@ namespace NPBehave
             }
             else
             {
-                Clock.RemoveUpdateObserver(OnUpdate);
+                Clock.RemoveUpdateObserver(Guid);
                 this.Stopped(result == Result.SUCCESS);
             }
         }
@@ -65,7 +65,7 @@ namespace NPBehave
         protected override void DoStop()
         {
             Result result = OnAction(Request.CANCEL);
-            Clock.RemoveUpdateObserver(OnUpdate);
+            Clock.RemoveUpdateObserver(Guid);
             this.Stopped(result == Result.SUCCESS);
         }
         

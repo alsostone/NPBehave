@@ -15,9 +15,10 @@ namespace NPBehave
     {
         private struct Notification
         {
-            public string key;
-            public NotifyType type;
-            public object value;
+            public readonly string key;
+            public readonly NotifyType type;
+            public readonly object value;
+
             public Notification(string key, NotifyType type, object value)
             {
                 this.key = key;
@@ -39,8 +40,7 @@ namespace NPBehave
         [MemoryPackInclude, MemoryPackOrder(7)] private Dictionary<string, List<int>> observers = new Dictionary<string, List<int>>();
         [MemoryPackInclude, MemoryPackOrder(8)] private Dictionary<string, List<int>> addObservers = new Dictionary<string, List<int>>();
         [MemoryPackInclude, MemoryPackOrder(9)] private Dictionary<string, List<int>> removeObservers = new Dictionary<string, List<int>>();
-
-        [MemoryPackInclude, MemoryPackOrder(10)] private int currentGuid = 0;
+        
         [MemoryPackIgnore] public readonly Dictionary<int, Receiver> IdNodeMapping = new Dictionary<int, Receiver>();
 
         [MemoryPackConstructor]
@@ -49,29 +49,23 @@ namespace NPBehave
         }
 
         [MemoryPackOnDeserialized]
-        private void OnDeserialized()
+        private void OnDeserialized() 
         {
-            IdNodeMapping.Add(this.Guid, this);
         }
         
         public Blackboard(Blackboard parent, Clock clock)
         {
+            this.Guid = ReceiverIdGenerator.GetNextGuid();
             this.clock = clock;
             this.parent = parent;
-            this.Guid = GetNextGuid();
-            IdNodeMapping.Add(this.Guid, this);
+            this.clock.IdNodeMapping.Add(Guid, this);
         }
         public Blackboard(Clock clock)
         {
+            this.Guid = ReceiverIdGenerator.GetNextGuid();
             this.clock = clock;
             this.parent = null;
-            this.Guid = GetNextGuid();
-            IdNodeMapping.Add(this.Guid, this);
-        }
-
-        public int GetNextGuid()
-        {
-            return ++currentGuid;
+            this.clock.IdNodeMapping.Add(Guid, this);
         }
 
         public void Enable()
@@ -90,7 +84,7 @@ namespace NPBehave
             }
             if (this.clock != null)
             {
-                this.clock.RemoveTimer(this.NotifyObservers);
+                this.clock.RemoveTimer(Guid);
             }
         }
 
@@ -120,7 +114,7 @@ namespace NPBehave
                 {
                     this.data[key] = value;
                     this.notifications.Add(new Notification(key, NotifyType.ADD, value));
-                    this.clock.AddTimer(0f, 0, NotifyObservers);
+                    this.clock.AddTimer(0f, 0, Guid);
                 }
                 else
                 {
@@ -128,7 +122,7 @@ namespace NPBehave
                     {
                         this.data[key] = value;
                         this.notifications.Add(new Notification(key, NotifyType.CHANGE, value));
-                        this.clock.AddTimer(0f, 0, NotifyObservers);
+                        this.clock.AddTimer(0f, 0, Guid);
                     }
                 }
             }
@@ -140,7 +134,7 @@ namespace NPBehave
             {
                 this.data.Remove(key);
                 this.notifications.Add(new Notification(key, NotifyType.REMOVE, null));
-                this.clock.AddTimer(0f, 0, NotifyObservers);
+                this.clock.AddTimer(0f, 0, Guid);
             }
         }
         
@@ -175,6 +169,37 @@ namespace NPBehave
             return this.data.ContainsKey(key) || (this.parent != null && this.parent.Isset(key));
         }
 
+#if UNITY_EDITOR
+        [MemoryPackIgnore] public List<string> Keys
+        {
+            get
+            {
+                if (this.parent != null)
+                {
+                    List<string> keys = this.parent.Keys;
+                    keys.AddRange(data.Keys);
+                    return keys;
+                }
+                else
+                {
+                    return new List<string>(data.Keys);
+                }
+            }
+        }
+        [MemoryPackIgnore] public int NumObservers
+        {
+            get
+            {
+                int count = 0;
+                foreach (string key in observers.Keys)
+                {
+                    count += observers[key].Count;
+                }
+                return count;
+            }
+        }
+#endif
+        
         public void AddObserver(string key, int observer)
         {
             var keyObservers = GetKeyObservers(observers, key);
@@ -232,39 +257,23 @@ namespace NPBehave
                 }
             }
         }
-        
-#if UNITY_EDITOR
-        [MemoryPackIgnore] public List<string> Keys
+
+        private List<int> GetKeyObservers(Dictionary<string, List<int>> target, string key)
         {
-            get
+            List<int> keyObservers;
+            if (target.ContainsKey(key))
             {
-                if (this.parent != null)
-                {
-                    List<string> keys = this.parent.Keys;
-                    keys.AddRange(data.Keys);
-                    return keys;
-                }
-                else
-                {
-                    return new List<string>(data.Keys);
-                }
+                keyObservers = target[key];
             }
-        }
-        [MemoryPackIgnore] public int NumObservers
-        {
-            get
+            else
             {
-                int count = 0;
-                foreach (string key in observers.Keys)
-                {
-                    count += observers[key].Count;
-                }
-                return count;
+                keyObservers = new List<int>();
+                target[key] = keyObservers;
             }
+            return keyObservers;
         }
-#endif
         
-        private void NotifyObservers()
+        public override void OnTimerReached()
         {
             if (notifications.Count == 0)
             {
@@ -276,7 +285,7 @@ namespace NPBehave
             foreach (var child in children)
             {
                 child.notifications.AddRange(notifications);
-                child.clock.AddTimer(0f, 0, child.NotifyObservers);
+                child.clock.AddTimer(0f, 0, child.Guid);
             }
             notifications.Clear();
 
@@ -316,19 +325,5 @@ namespace NPBehave
             isNotifying = false;
         }
 
-        private List<int> GetKeyObservers(Dictionary<string, List<int>> target, string key)
-        {
-            List<int> keyObservers;
-            if (target.ContainsKey(key))
-            {
-                keyObservers = target[key];
-            }
-            else
-            {
-                keyObservers = new List<int>();
-                target[key] = keyObservers;
-            }
-            return keyObservers;
-        }
     }
 }

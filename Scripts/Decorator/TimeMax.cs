@@ -28,13 +28,13 @@ namespace NPBehave
         protected override void DoStart()
         {
             this.isLimitReached = false;
-            Clock.AddTimer(limit, randomVariation, 0, TimeoutReached);
+            Clock.AddTimer(limit, randomVariation, 0, Guid);
             Decoratee.Start();
         }
 
         protected override void DoStop()
         {
-            Clock.RemoveTimer(TimeoutReached);
+            Clock.RemoveTimer(Guid);
             if (Decoratee.IsActive)
             {
                 Decoratee.Stop();
@@ -47,7 +47,7 @@ namespace NPBehave
 
         protected override void DoChildStopped(Node child, bool result)
         {
-            Clock.RemoveTimer(TimeoutReached);
+            Clock.RemoveTimer(Guid);
             if (isLimitReached)
             {
                 Stopped(false);
@@ -58,7 +58,7 @@ namespace NPBehave
             }
         }
 
-        private void TimeoutReached()
+        public override void OnTimerReached()
         {
             if (!waitForChildButFailOnLimitReached)
             {

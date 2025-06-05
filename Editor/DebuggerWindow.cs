@@ -309,7 +309,7 @@ namespace NPBehave
                 if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(BlackboardCondition<>))
                 {
                     dynamic nodeBlackboardCond = node;
-                    tagName = nodeBlackboardCond.Key + " " + operatorToString[nodeBlackboardCond.Operator] + " " + nodeBlackboardCond.Value;
+                    tagName = nodeBlackboardCond.BlackboardKey + " " + operatorToString[nodeBlackboardCond.Operator] + " " + nodeBlackboardCond.Value;
                     GUI.backgroundColor = new Color(0.9f, 0.9f, 0.6f);
                 }
                 else

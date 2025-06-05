@@ -25,7 +25,7 @@ namespace NPBehave
         {
             if (!IsConditionMet())
             {
-                Clock.AddTimer(checkInterval, checkVariance, -1, OnTimerReached);
+                Clock.AddTimer(checkInterval, checkVariance, -1, Guid);
             }
             else
             {
@@ -33,18 +33,18 @@ namespace NPBehave
             }
         }
 
-        private void OnTimerReached()
+        public override void OnTimerReached()
         {
             if (IsConditionMet())
             {
-                Clock.RemoveTimer(OnTimerReached);
+                Clock.RemoveTimer(Guid);
                 Decoratee.Start();
             }
         }
 
         protected override void DoStop()
         {
-            Clock.RemoveTimer(OnTimerReached);
+            Clock.RemoveTimer(Guid);
             if (Decoratee.IsActive)
             {
                 Decoratee.Stop();
