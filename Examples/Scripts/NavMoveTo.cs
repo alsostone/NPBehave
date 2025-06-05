@@ -50,7 +50,7 @@ namespace NPBehave.Examples
             lastDistance = 99999999.0f;
             failedChecks = 0;
 
-            Blackboard.AddObserver(blackboardKey, onBlackboardValueChanged);
+            Blackboard.AddObserver(blackboardKey, Guid);
             Clock.AddTimer(updateFrequency, updateVariance, -1, OnTimerReached);
 
             moveToBlackboardKey();
@@ -61,7 +61,7 @@ namespace NPBehave.Examples
             stopAndCleanUp(false);
         }
 
-        private void onBlackboardValueChanged(Blackboard.Type type, object newValue)
+        private void OnValueChanged(NotifyType type, object newValue)
         {
             moveToBlackboardKey();
         }
@@ -146,7 +146,7 @@ namespace NPBehave.Examples
         private void stopAndCleanUp(bool result)
         {
             agent.destination = agent.transform.position;
-            Blackboard.RemoveObserver(blackboardKey, onBlackboardValueChanged);
+            Blackboard.RemoveObserver(blackboardKey, Guid);
             Clock.RemoveTimer(OnTimerReached);
             Stopped(result);
         }

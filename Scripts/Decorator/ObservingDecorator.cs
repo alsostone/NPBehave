@@ -52,7 +52,7 @@ namespace NPBehave
             Stopped(result);
         }
 
-        protected override void DoParentCompositeStopped(Composite parentComposite)
+        protected override void DoParentCompositeStopped(Composite composite)
         {
             if (isObserving)
             {

@@ -6,7 +6,7 @@ namespace NPBehave
     {
         private class BlackboardQuery2 : BlackboardQuery
         {
-            public BlackboardQuery2(string[] keys, Stops stopsOnChange, Node decoratee) : base(keys, stopsOnChange, decoratee)
+            public BlackboardQuery2(string[] blackboardKeys, Stops stopsOnChange, Node decoratee) : base(blackboardKeys, stopsOnChange, decoratee)
             {
             }
             protected override bool IsConditionMet()

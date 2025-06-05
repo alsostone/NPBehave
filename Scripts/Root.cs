@@ -34,9 +34,8 @@ namespace NPBehave
         public sealed override void SetRoot(Root rootNode)
         {
             base.SetRoot(rootNode);
-            this.Decoratee.SetRoot(rootNode);
         }
-        
+
         protected override void DoStart()
         {
             this.blackboard.Enable();

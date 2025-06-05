@@ -3,7 +3,7 @@ namespace NPBehave
 {
 #pragma warning disable 618 // deprecation
 
-    public class BlackboardTest
+    public class BlackboardTest : Test
     {
         private Clock clock;
         private Blackboard sut;
@@ -15,58 +15,57 @@ namespace NPBehave
             this.sut = new Blackboard(clock);
         }
 
+        private class SetBlackboardKey : Node
+        {
+            private string observerName;
+            private string key;
+            private object value;
+            
+            public SetBlackboardKey(string observerName, string key, object value) : base("SetBlackboardKey")
+            {
+                this.observerName = observerName;
+                this.key = key;
+                this.value = value;
+            }
+            protected override void DoStart()
+            {
+                Blackboard.AddObserver(this.observerName, Guid);
+            }
+            protected override void DoStop()
+            {
+                Blackboard.RemoveObserver(this.observerName, Guid);
+            }
+            public override void OnObservingChanged(NotifyType type, object changedValue)
+            {
+                Blackboard.Set(key, value);
+            }
+        }
+        
         [Test]
         public void ShouldNotNotifyObservers_WhenNoClockUpdate()
         {
-            bool notified = false;
-            this.sut.AddObserver("test", ( Blackboard.Type type, object value ) =>
-            {
-                notified = true;
-            });
+            var setKey = new SetBlackboardKey("test", "notified", true);
+            TestRoot behaviorTree = CreateBehaviorTree(setKey);
+            
+            Blackboard.Set("notified", false);
+            behaviorTree.Start();
 
-            this.sut.Set("test", 1f);
-            Assert.IsFalse(notified);
+            Blackboard.Set("test", 1f);
+            Assert.IsFalse(behaviorTree.Blackboard.Get<bool>("notified"));
         }
 
         [Test]
         public void ShouldNotifyObservers_WhenClockUpdate()
         {
-            bool notified = false;
-            this.sut.AddObserver("test", ( Blackboard.Type type, object value ) =>
-            {
-                notified = true;
-            });
-
-            this.sut.Set("test", 1f);
-            this.clock.Update(1f);
-            Assert.IsTrue(notified);
-        }
-
-        [Test]
-        public void ShouldNotNotifyObserver_WhenRemovedDuringOtherObserver()
-        {
-            bool notified = false;
-            System.Action<Blackboard.Type, object> obs1 = null;
-            System.Action<Blackboard.Type, object> obs2 = null;
-
-            obs1 = ( Blackboard.Type type, object value ) =>
-            {
-                Assert.IsFalse(notified);
-                notified = true;
-                this.sut.RemoveObserver("test", obs2);
-            };
-            obs2 = ( Blackboard.Type type, object value ) =>
-            {
-                Assert.IsFalse(notified);
-                notified = true;
-                this.sut.RemoveObserver("test", obs1);
-            };
-            this.sut.AddObserver("test", obs1);
-            this.sut.AddObserver("test", obs2);
-
-            this.sut.Set("test", 1f);
-            this.clock.Update(1f);
-            Assert.IsTrue(notified);
+            var setKey = new SetBlackboardKey("test", "notified", true);
+            TestRoot behaviorTree = CreateBehaviorTree(setKey);
+            
+            Blackboard.Set("notified", false);
+            behaviorTree.Start();
+            
+            Blackboard.Set("test", 1f);
+            Timer.Update(1f);
+            Assert.IsTrue(Blackboard.Get<bool>("notified"));
         }
 
         [Test]

@@ -3,21 +3,22 @@ using MemoryPack;
 
 namespace NPBehave
 {
-    [MemoryPackable(GenerateType.CircularReference)]
-    public partial class Blackboard
+    public enum NotifyType
     {
-        public enum Type
-        {
-            ADD,
-            REMOVE,
-            CHANGE
-        }
+        ADD,
+        REMOVE,
+        CHANGE
+    }
+    
+    [MemoryPackable(GenerateType.CircularReference)]
+    public partial class Blackboard : Receiver
+    {
         private struct Notification
         {
             public string key;
-            public Type type;
+            public NotifyType type;
             public object value;
-            public Notification(string key, Type type, object value)
+            public Notification(string key, NotifyType type, object value)
             {
                 this.key = key;
                 this.type = type;
@@ -26,28 +27,51 @@ namespace NPBehave
         }
 
         private Clock clock;
-        private Dictionary<string, object> data = new Dictionary<string, object>();
-        private Dictionary<string, List<System.Action<Type, object>>> observers = new Dictionary<string, List<System.Action<Type, object>>>();
-        private bool isNotifying = false;
-        private Dictionary<string, List<System.Action<Type, object>>> addObservers = new Dictionary<string, List<System.Action<Type, object>>>();
-        private Dictionary<string, List<System.Action<Type, object>>> removeObservers = new Dictionary<string, List<System.Action<Type, object>>>();
-        private List<Notification> notifications = new List<Notification>();
-        private List<Notification> notificationsDispatch = new List<Notification>();
-        private Blackboard parent;
-        private HashSet<Blackboard> children = new HashSet<Blackboard>();
+
+        [MemoryPackInclude, MemoryPackOrder(1)] private Blackboard parent;
+        [MemoryPackInclude, MemoryPackOrder(2)] private HashSet<Blackboard> children = new HashSet<Blackboard>();
+        [MemoryPackInclude, MemoryPackOrder(3)] private Dictionary<string, object> data = new Dictionary<string, object>();
         
+        [MemoryPackInclude, MemoryPackOrder(4)] private bool isNotifying = false;
+        [MemoryPackInclude, MemoryPackOrder(5)] private List<Notification> notifications = new List<Notification>();
+        [MemoryPackInclude, MemoryPackOrder(6)] private List<Notification> notificationsDispatch = new List<Notification>();
+        
+        [MemoryPackInclude, MemoryPackOrder(7)] private Dictionary<string, List<int>> observers = new Dictionary<string, List<int>>();
+        [MemoryPackInclude, MemoryPackOrder(8)] private Dictionary<string, List<int>> addObservers = new Dictionary<string, List<int>>();
+        [MemoryPackInclude, MemoryPackOrder(9)] private Dictionary<string, List<int>> removeObservers = new Dictionary<string, List<int>>();
+
+        [MemoryPackInclude, MemoryPackOrder(10)] private int currentGuid = 0;
+        [MemoryPackIgnore] public readonly Dictionary<int, Receiver> IdNodeMapping = new Dictionary<int, Receiver>();
+
         [MemoryPackConstructor]
-        private Blackboard() {}
+        private Blackboard()
+        {
+        }
+
+        [MemoryPackOnDeserialized]
+        private void OnDeserialized()
+        {
+            IdNodeMapping.Add(this.Guid, this);
+        }
         
         public Blackboard(Blackboard parent, Clock clock)
         {
             this.clock = clock;
             this.parent = parent;
+            this.Guid = GetNextGuid();
+            IdNodeMapping.Add(this.Guid, this);
         }
         public Blackboard(Clock clock)
         {
-            this.parent = null;
             this.clock = clock;
+            this.parent = null;
+            this.Guid = GetNextGuid();
+            IdNodeMapping.Add(this.Guid, this);
+        }
+
+        public int GetNextGuid()
+        {
+            return ++currentGuid;
         }
 
         public void Enable()
@@ -95,7 +119,7 @@ namespace NPBehave
                 if (!this.data.ContainsKey(key))
                 {
                     this.data[key] = value;
-                    this.notifications.Add(new Notification(key, Type.ADD, value));
+                    this.notifications.Add(new Notification(key, NotifyType.ADD, value));
                     this.clock.AddTimer(0f, 0, NotifyObservers);
                 }
                 else
@@ -103,7 +127,7 @@ namespace NPBehave
                     if ((this.data[key] == null && value != null) || (this.data[key] != null && !this.data[key].Equals(value)))
                     {
                         this.data[key] = value;
-                        this.notifications.Add(new Notification(key, Type.CHANGE, value));
+                        this.notifications.Add(new Notification(key, NotifyType.CHANGE, value));
                         this.clock.AddTimer(0f, 0, NotifyObservers);
                     }
                 }
@@ -115,7 +139,7 @@ namespace NPBehave
             if (this.data.ContainsKey(key))
             {
                 this.data.Remove(key);
-                this.notifications.Add(new Notification(key, Type.REMOVE, null));
+                this.notifications.Add(new Notification(key, NotifyType.REMOVE, null));
                 this.clock.AddTimer(0f, 0, NotifyObservers);
             }
         }
@@ -151,60 +175,60 @@ namespace NPBehave
             return this.data.ContainsKey(key) || (this.parent != null && this.parent.Isset(key));
         }
 
-        public void AddObserver(string key, System.Action<Type, object> observer)
+        public void AddObserver(string key, int observer)
         {
-            List<System.Action<Type, object>> observers = GetObserverList(this.observers, key);
+            var keyObservers = GetKeyObservers(observers, key);
             if (!isNotifying)
             {
-                if (!observers.Contains(observer))
+                if (!keyObservers.Contains(observer))
                 {
-                    observers.Add(observer);
+                    keyObservers.Add(observer);
                 }
             }
             else
             {
-                if (!observers.Contains(observer))
+                if (!keyObservers.Contains(observer))
                 {
-                    List<System.Action<Type, object>> addObservers = GetObserverList(this.addObservers, key);
-                    if (!addObservers.Contains(observer))
+                    var keyAddObservers = GetKeyObservers(addObservers, key);
+                    if (!keyAddObservers.Contains(observer))
                     {
-                        addObservers.Add(observer);
+                        keyAddObservers.Add(observer);
                     }
                 }
 
-                List<System.Action<Type, object>> removeObservers = GetObserverList(this.removeObservers, key);
-                if (removeObservers.Contains(observer))
+                var keyRemoveObservers = GetKeyObservers(removeObservers, key);
+                if (keyRemoveObservers.Contains(observer))
                 {
-                    removeObservers.Remove(observer);
+                    keyRemoveObservers.Remove(observer);
                 }
             }
         }
 
-        public void RemoveObserver(string key, System.Action<Type, object> observer)
+        public void RemoveObserver(string key, int observer)
         {
-            List<System.Action<Type, object>> observers = GetObserverList(this.observers, key);
+            var keyObservers = GetKeyObservers(observers, key);
             if (!isNotifying)
             {
-                if (observers.Contains(observer))
+                if (keyObservers.Contains(observer))
                 {
-                    observers.Remove(observer);
+                    keyObservers.Remove(observer);
                 }
             }
             else
             {
-                List<System.Action<Type, object>> removeObservers = GetObserverList(this.removeObservers, key);
-                if (!removeObservers.Contains(observer))
+                var keyRemoveObservers = GetKeyObservers(removeObservers, key);
+                if (!keyRemoveObservers.Contains(observer))
                 {
-                    if (observers.Contains(observer))
+                    if (keyObservers.Contains(observer))
                     {
-                        removeObservers.Add(observer);
+                        keyRemoveObservers.Add(observer);
                     }
                 }
 
-                List<System.Action<Type, object>> addObservers = GetObserverList(this.addObservers, key);
-                if (addObservers.Contains(observer))
+                var keyAddObservers = GetKeyObservers(addObservers, key);
+                if (keyAddObservers.Contains(observer))
                 {
-                    addObservers.Remove(observer);
+                    keyAddObservers.Remove(observer);
                 }
             }
         }
@@ -249,7 +273,7 @@ namespace NPBehave
 
             notificationsDispatch.Clear();
             notificationsDispatch.AddRange(notifications);
-            foreach (Blackboard child in children)
+            foreach (var child in children)
             {
                 child.notifications.AddRange(notifications);
                 child.clock.AddTimer(0f, 0, child.NotifyObservers);
@@ -257,54 +281,54 @@ namespace NPBehave
             notifications.Clear();
 
             isNotifying = true;
-            foreach (Notification notification in notificationsDispatch)
+            foreach (var notification in notificationsDispatch)
             {
-                if (!this.observers.ContainsKey(notification.key))
+                if (!observers.ContainsKey(notification.key))
                 {
                     continue;
                 }
 
-                List<System.Action<Type, object>> observers = GetObserverList(this.observers, notification.key);
-                foreach (System.Action<Type, object> observer in observers)
+                var keyObservers = GetKeyObservers(observers, notification.key);
+                foreach (var observer in keyObservers)
                 {
-                    if (this.removeObservers.ContainsKey(notification.key) && this.removeObservers[notification.key].Contains(observer))
+                    if (removeObservers.ContainsKey(notification.key) && removeObservers[notification.key].Contains(observer))
                     {
                         continue;
                     }
-                    observer(notification.type, notification.value);
+                    IdNodeMapping[observer].OnObservingChanged(notification.type, notification.value);
                 }
             }
 
-            foreach (string key in this.addObservers.Keys)
+            foreach (var key in addObservers.Keys)
             {
-                GetObserverList(this.observers, key).AddRange(this.addObservers[key]);
+                GetKeyObservers(observers, key).AddRange(addObservers[key]);
             }
-            foreach (string key in this.removeObservers.Keys)
+            foreach (var key in removeObservers.Keys)
             {
-                foreach (System.Action<Type, object> action in removeObservers[key])
+                foreach (var action in removeObservers[key])
                 {
-                    GetObserverList(this.observers, key).Remove(action);
+                    GetKeyObservers(observers, key).Remove(action);
                 }
             }
-            this.addObservers.Clear();
-            this.removeObservers.Clear();
+            addObservers.Clear();
+            removeObservers.Clear();
 
             isNotifying = false;
         }
 
-        private List<System.Action<Type, object>> GetObserverList(Dictionary<string, List<System.Action<Type, object>>> target, string key)
+        private List<int> GetKeyObservers(Dictionary<string, List<int>> target, string key)
         {
-            List<System.Action<Type, object>> observers;
+            List<int> keyObservers;
             if (target.ContainsKey(key))
             {
-                observers = target[key];
+                keyObservers = target[key];
             }
             else
             {
-                observers = new List<System.Action<Type, object>>();
-                target[key] = observers;
+                keyObservers = new List<int>();
+                target[key] = keyObservers;
             }
-            return observers;
+            return keyObservers;
         }
     }
 }

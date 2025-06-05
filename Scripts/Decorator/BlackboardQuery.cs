@@ -4,38 +4,38 @@ namespace NPBehave
 {
     public abstract class BlackboardQuery : ObservingDecorator
     {
-        [MemoryPackInclude] protected readonly string[] keys;
+        [MemoryPackInclude] protected readonly string[] blackboardKeys;
 
-        protected BlackboardQuery(string[] keys, Stops stopsOnChange, Node decoratee) : base("BlackboardQuery", stopsOnChange, decoratee)
+        protected BlackboardQuery(string[] blackboardKeys, Stops stopsOnChange, Node decoratee) : base("BlackboardQuery", stopsOnChange, decoratee)
         {
-            this.keys = keys;
+            this.blackboardKeys = blackboardKeys;
         }
 
         protected override void StartObserving()
         {
-            foreach (string key in this.keys)
+            foreach (string blackboardKey in blackboardKeys)
             {
-                Blackboard.AddObserver(key, onValueChanged);
+                Blackboard.AddObserver(blackboardKey, Guid);
             }
         }
 
         protected override void StopObserving()
         {
-            foreach (string key in this.keys)
+            foreach (string blackboardKey in blackboardKeys)
             {
-                Blackboard.RemoveObserver(key, onValueChanged);
+                Blackboard.RemoveObserver(blackboardKey, Guid);
             }
         }
-
-        private void onValueChanged(Blackboard.Type type, object newValue)
+        
+        public override void OnObservingChanged(NotifyType type, object changedValue)
         {
             Evaluate();
         }
-
+        
         public override string ToString()
         {
             string s = "";
-            foreach (string key in this.keys)
+            foreach (string key in this.blackboardKeys)
             {
                 s += " " + key;
             }

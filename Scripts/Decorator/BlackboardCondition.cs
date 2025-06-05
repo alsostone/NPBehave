@@ -6,40 +6,39 @@ namespace NPBehave
     [MemoryPackable]
     public partial class BlackboardCondition<T> : ObservingDecorator where T : IComparable<T>
     {
-        [MemoryPackInclude] private readonly string key;
+        [MemoryPackInclude] private readonly string blackboardKey;
         [MemoryPackInclude] private readonly T value;
         [MemoryPackInclude] private readonly Operator op;
 
-        [MemoryPackIgnore] public string Key => key;
+        [MemoryPackIgnore] public string BlackboardKey => blackboardKey;
         [MemoryPackIgnore] public T Value => value;
         [MemoryPackIgnore] public Operator Operator => op;
 
         [MemoryPackConstructor]
-        public BlackboardCondition(string key, Operator op, T value, Stops stopsOnChange, Node decoratee) : base("BlackboardCondition", stopsOnChange, decoratee)
+        public BlackboardCondition(string blackboardKey, Operator op, T value, Stops stopsOnChange, Node decoratee) : base("BlackboardCondition", stopsOnChange, decoratee)
         {
             this.op = op;
-            this.key = key;
+            this.blackboardKey = blackboardKey;
             this.value = value;
         }
         
-        public BlackboardCondition(string key, Operator op, Stops stopsOnChange, Node decoratee) : base("BlackboardCondition", stopsOnChange, decoratee)
+        public BlackboardCondition(string blackboardKey, Operator op, Stops stopsOnChange, Node decoratee) : base("BlackboardCondition", stopsOnChange, decoratee)
         {
             this.op = op;
-            this.key = key;
+            this.blackboardKey = blackboardKey;
         }
-
-
+        
         protected override void StartObserving()
         {
-            Blackboard.AddObserver(key, onValueChanged);
+            Blackboard.AddObserver(blackboardKey, Guid);
         }
 
         protected override void StopObserving()
         {
-            Blackboard.RemoveObserver(key, onValueChanged);
+            Blackboard.RemoveObserver(blackboardKey, Guid);
         }
-
-        private void onValueChanged(Blackboard.Type type, object newValue)
+        
+        public override void OnObservingChanged(NotifyType type, object changedValue)
         {
             Evaluate();
         }
@@ -51,12 +50,12 @@ namespace NPBehave
                 return true;
             }
 
-            if (!Blackboard.Isset(key))
+            if (!Blackboard.Isset(blackboardKey))
             {
                 return op == Operator.IS_NOT_SET;
             }
 
-            var o = Blackboard.Get<T>(key);
+            var o = Blackboard.Get<T>(blackboardKey);
             switch (this.op)
             {
                 case Operator.IS_SET: return true;
@@ -72,7 +71,7 @@ namespace NPBehave
 
         public override string ToString()
         {
-            return "(" + this.op + ") " + this.key + " ? " + this.value;
+            return "(" + this.op + ") " + this.blackboardKey + " ? " + this.value;
         }
     }
 }
