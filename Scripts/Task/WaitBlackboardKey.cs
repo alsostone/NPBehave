@@ -16,7 +16,7 @@ namespace NPBehave
         
         protected override void DoStart()
         {
-            float delay = Blackboard.Get<float>(this.blackboardKey);
+            float delay = Blackboard.Get<float>(blackboardKey);
             if (delay < 0)
             {
                 delay = 0;
@@ -35,13 +35,13 @@ namespace NPBehave
         protected override void DoStop()
         {
             Clock.RemoveTimer(Guid);
-            this.Stopped(false);
+            Stopped(false);
         }
 
         public override void OnTimerReached()
         {
             Clock.RemoveTimer(Guid);
-            this.Stopped(true);
+            Stopped(true);
         }
     }
 }

@@ -13,7 +13,7 @@ namespace NPBehave
         public TimeMax(float limit, bool waitForChildButFailOnLimitReached, Node decoratee) : base("TimeMax", decoratee)
         {
             this.limit = limit;
-            this.randomVariation = limit * 0.05f;
+            randomVariation = limit * 0.05f;
             this.waitForChildButFailOnLimitReached = waitForChildButFailOnLimitReached;
         }
 
@@ -27,7 +27,7 @@ namespace NPBehave
 
         protected override void DoStart()
         {
-            this.isLimitReached = false;
+            isLimitReached = false;
             Clock.AddTimer(limit, randomVariation, 0, Guid);
             Decoratee.Start();
         }

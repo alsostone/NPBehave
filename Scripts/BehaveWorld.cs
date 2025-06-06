@@ -16,17 +16,17 @@ namespace NPBehave
         
         public BehaveWorld()
         {
-            this.Clock = new Clock();
-            this.Clock.Set(this);
-            this.blackboards = new List<Blackboard>();
-            this.sharedBlackboards = new Dictionary<string, int>();
+            Clock = new Clock();
+            Clock.Set(this);
+            blackboards = new List<Blackboard>();
+            sharedBlackboards = new Dictionary<string, int>();
         }
         
         [MemoryPackConstructor]
         private BehaveWorld(Clock clock, List<Blackboard> blackboards, Dictionary<string, int> sharedBlackboards)
         {
-            this.Clock = clock;
-            this.Clock.Set(this);
+            Clock = clock;
+            Clock.Set(this);
             this.blackboards = blackboards;
             this.sharedBlackboards = sharedBlackboards;
         }

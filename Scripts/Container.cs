@@ -19,7 +19,7 @@ namespace NPBehave
 
         public void ChildStopped(Node child, bool succeeded)
         {
-            this.DoChildStopped(child, succeeded);
+            DoChildStopped(child, succeeded);
         }
 
         protected abstract void DoChildStopped(Node child, bool succeeded);

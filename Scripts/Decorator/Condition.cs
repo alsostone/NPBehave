@@ -9,20 +9,20 @@ namespace NPBehave
         
         protected Condition(Node decoratee) : base("Condition", Stops.NONE, decoratee)
         {
-            this.checkInterval = 0.0f;
-            this.checkVariance = 0.0f;
+            checkInterval = 0.0f;
+            checkVariance = 0.0f;
         }
 
         protected Condition(Stops stopsOnChange, Node decoratee) : base("Condition", stopsOnChange, decoratee)
         {
-            this.checkInterval = 0.0f;
-            this.checkVariance = 0.0f;
+            checkInterval = 0.0f;
+            checkVariance = 0.0f;
         }
 
         protected Condition(Stops stopsOnChange, float checkInterval, float randomVariance, Node decoratee) : base("Condition", stopsOnChange, decoratee)
         {
             this.checkInterval = checkInterval;
-            this.checkVariance = randomVariance;
+            checkVariance = randomVariance;
         }
 
         protected override void StartObserving()

@@ -18,12 +18,12 @@ namespace NPBehave
         public WaitSecond(float seconds) : base("WaitSecond")
         {
             this.seconds = seconds;
-            this.randomVariance = this.seconds * 0.05f;
+            randomVariance = this.seconds * 0.05f;
         }
 
         protected override void DoStart()
         {
-            float delay = this.seconds;
+            float delay = seconds;
             if (delay < 0)
             {
                 delay = 0;
@@ -42,13 +42,13 @@ namespace NPBehave
         protected override void DoStop()
         {
             Clock.RemoveTimer(Guid);
-            this.Stopped(false);
+            Stopped(false);
         }
 
         public override void OnTimerReached()
         {
             Clock.RemoveTimer(Guid);
-            this.Stopped(true);
+            Stopped(true);
         }
     }
 }

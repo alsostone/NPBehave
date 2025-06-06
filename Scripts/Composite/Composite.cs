@@ -8,7 +8,7 @@ namespace NPBehave
 
         protected Composite(string name, Node[] children) : base(name)
         {
-            this.Children = children;
+            Children = children;
             foreach (Node node in Children)
             {
                 node.SetParent(this);
@@ -29,7 +29,7 @@ namespace NPBehave
         {
             get
             {
-                return this.Children;
+                return Children;
             }
         }
 
@@ -37,7 +37,7 @@ namespace NPBehave
         {
             foreach( Node node in DebugChildren )
             {
-                if(node.CurrentState == Node.State.ACTIVE )
+                if(node.CurrentState == State.ACTIVE )
                 {
                     return node;
                 }

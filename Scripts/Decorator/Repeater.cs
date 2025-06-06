@@ -30,7 +30,7 @@ namespace NPBehave
             }
             else
             {
-                this.Stopped(true);
+                Stopped(true);
             }
         }
 

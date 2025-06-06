@@ -111,7 +111,7 @@ namespace NPBehave
 
         public override string ToString()
         {
-            return base.ToString() + "[" + this.currentIndex + "]";
+            return base.ToString() + "[" + currentIndex + "]";
         }
     }
 }

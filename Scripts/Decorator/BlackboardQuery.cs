@@ -35,7 +35,7 @@ namespace NPBehave
         public override string ToString()
         {
             string s = "";
-            foreach (string key in this.blackboardKeys)
+            foreach (string key in blackboardKeys)
             {
                 s += " " + key;
             }

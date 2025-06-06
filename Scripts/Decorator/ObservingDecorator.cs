@@ -10,7 +10,7 @@ namespace NPBehave
         protected ObservingDecorator(string name, Stops stopsOnChange, Node decoratee) : base(name, decoratee)
         {
             this.stopsOnChange = stopsOnChange;
-            this.isObserving = false;
+            isObserving = false;
         }
         
         protected override void DoStart()
@@ -67,14 +67,14 @@ namespace NPBehave
             {
                 if (stopsOnChange == Stops.SELF || stopsOnChange == Stops.BOTH || stopsOnChange == Stops.IMMEDIATE_RESTART)
                 {
-                    this.Stop();
+                    Stop();
                 }
             }
             else if (!IsActive && IsConditionMet())
             {
                 if (stopsOnChange == Stops.LOWER_PRIORITY || stopsOnChange == Stops.BOTH || stopsOnChange == Stops.IMMEDIATE_RESTART || stopsOnChange == Stops.LOWER_PRIORITY_IMMEDIATE_RESTART)
                 {
-                    Container parentNode = this.ParentNode;
+                    Container parentNode = ParentNode;
                     Node childNode = this;
                     while (parentNode != null && !(parentNode is Composite))
                     {

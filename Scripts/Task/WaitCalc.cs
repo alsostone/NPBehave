@@ -32,13 +32,13 @@ namespace NPBehave
         protected override void DoStop()
         {
             Clock.RemoveTimer(Guid);
-            this.Stopped(false);
+            Stopped(false);
         }
 
         public override void OnTimerReached()
         {
             Clock.RemoveTimer(Guid);
-            this.Stopped(true);
+            Stopped(true);
         }
 
         protected abstract float CalcSeconds();

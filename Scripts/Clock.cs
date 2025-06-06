@@ -36,7 +36,7 @@ namespace NPBehave
         internal Clock() { }
         internal void Set(BehaveWorld center)
         {
-            this.world = center;
+            world = center;
         }
         
         /// <summary>Register a timer function</summary>
@@ -59,23 +59,23 @@ namespace NPBehave
 
             if (!isInUpdate)
             {
-                if (!this.timers.ContainsKey(action))
+                if (!timers.ContainsKey(action))
                 {
-					this.timers[action] = GetTimerFromPool();
+					timers[action] = GetTimerFromPool();
                 }
-				timer = this.timers[action];
+				timer = timers[action];
             }
             else
             {
-                if (!this.addTimers.ContainsKey(action))
+                if (!addTimers.ContainsKey(action))
                 {
-					this.addTimers[action] = GetTimerFromPool();
+					addTimers[action] = GetTimerFromPool();
                 }
-				timer = this.addTimers [action];
+				timer = addTimers [action];
 
-                if (this.removeTimers.Contains(action))
+                if (removeTimers.Contains(action))
                 {
-                    this.removeTimers.Remove(action);
+                    removeTimers.Remove(action);
                 }
             }
 
@@ -89,22 +89,22 @@ namespace NPBehave
         {
             if (!isInUpdate)
             {
-                if (this.timers.ContainsKey(action))
+                if (timers.ContainsKey(action))
                 {
                     timerPool.Enqueue(timers[action]);
-                    this.timers.Remove(action);
+                    timers.Remove(action);
                 }
             }
             else
             {
-                if (this.timers.ContainsKey(action))
+                if (timers.ContainsKey(action))
                 {
-                    this.removeTimers.Add(action);
+                    removeTimers.Add(action);
                 }
-                if (this.addTimers.ContainsKey(action))
+                if (addTimers.ContainsKey(action))
                 {
                     timerPool.Enqueue(addTimers[action]);
-                    this.addTimers.Remove(action);
+                    addTimers.Remove(action);
                 }
             }
         }
@@ -113,21 +113,21 @@ namespace NPBehave
         {
             if (!isInUpdate)
             {
-                return this.timers.ContainsKey(action);
+                return timers.ContainsKey(action);
             }
             else
             {
-                if (this.removeTimers.Contains(action))
+                if (removeTimers.Contains(action))
                 {
                     return false;
                 }
-                else if (this.addTimers.ContainsKey(action))
+                else if (addTimers.ContainsKey(action))
                 {
                     return true;
                 }
                 else
                 {
-                    return this.timers.ContainsKey(action);
+                    return timers.ContainsKey(action);
                 }
             }
         }
@@ -138,17 +138,17 @@ namespace NPBehave
         {
             if (!isInUpdate)
             {
-                this.updateObservers.Add(action);
+                updateObservers.Add(action);
             }
             else
             {
-                if (!this.updateObservers.Contains(action))
+                if (!updateObservers.Contains(action))
                 {
-                    this.addObservers.Add(action);
+                    addObservers.Add(action);
                 }
-                if (this.removeObservers.Contains(action))
+                if (removeObservers.Contains(action))
                 {
-                    this.removeObservers.Remove(action);
+                    removeObservers.Remove(action);
                 }
             }
         }
@@ -157,17 +157,17 @@ namespace NPBehave
         {
             if (!isInUpdate)
             {
-                this.updateObservers.Remove(action);
+                updateObservers.Remove(action);
             }
             else
             {
-                if (this.updateObservers.Contains(action))
+                if (updateObservers.Contains(action))
                 {
-                    this.removeObservers.Add(action);
+                    removeObservers.Add(action);
                 }
-                if (this.addObservers.Contains(action))
+                if (addObservers.Contains(action))
                 {
-                    this.addObservers.Remove(action);
+                    addObservers.Remove(action);
                 }
             }
         }
@@ -176,29 +176,29 @@ namespace NPBehave
         {
             if (!isInUpdate)
             {
-                return this.updateObservers.Contains(action);
+                return updateObservers.Contains(action);
             }
             else
             {
-                if (this.removeObservers.Contains(action))
+                if (removeObservers.Contains(action))
                 {
                     return false;
                 }
-                else if (this.addObservers.Contains(action))
+                else if (addObservers.Contains(action))
                 {
                     return true;
                 }
                 else
                 {
-                    return this.updateObservers.Contains(action);
+                    return updateObservers.Contains(action);
                 }
             }
         }
 
         internal void Update(float deltaTime)
         {
-            this.elapsedTime += deltaTime;
-            this.isInUpdate = true;
+            elapsedTime += deltaTime;
+            isInUpdate = true;
 
             foreach (var action in updateObservers)
             {
@@ -211,13 +211,13 @@ namespace NPBehave
             var keys = timers.Keys;
 			foreach (var callback in keys)
             {
-                if (this.removeTimers.Contains(callback))
+                if (removeTimers.Contains(callback))
                 {
                     continue;
                 }
 
 				Timer timer = timers[callback];
-                if (timer.scheduledTime <= this.elapsedTime)
+                if (timer.scheduledTime <= elapsedTime)
                 {
                     if (timer.repeat == 0)
                     {
@@ -233,40 +233,40 @@ namespace NPBehave
                 }
             }
 
-            foreach (var action in this.addObservers)
+            foreach (var action in addObservers)
             {
-                this.updateObservers.Add(action);
+                updateObservers.Add(action);
             }
-            foreach (var action in this.removeObservers)
+            foreach (var action in removeObservers)
             {
-                this.updateObservers.Remove(action);
+                updateObservers.Remove(action);
             }
-            foreach (var action in this.addTimers.Keys)
+            foreach (var action in addTimers.Keys)
             {
-                if (this.timers.TryGetValue(action, out var timer))
+                if (timers.TryGetValue(action, out var timer))
                 {
                     timerPool.Enqueue(timer);
                 }
-                this.timers[action] = this.addTimers[action];
+                timers[action] = addTimers[action];
             }
-            foreach (var action in this.removeTimers)
+            foreach (var action in removeTimers)
             {
                 timerPool.Enqueue(timers[action]);
-                this.timers.Remove(action);
+                timers.Remove(action);
             }
-            this.addObservers.Clear();
-            this.removeObservers.Clear();
-            this.addTimers.Clear();
-            this.removeTimers.Clear();
+            addObservers.Clear();
+            removeObservers.Clear();
+            addTimers.Clear();
+            removeTimers.Clear();
 
-            this.isInUpdate = false;
+            isInUpdate = false;
         }
         
 #if UNITY_EDITOR
         [MemoryPackIgnore] public int NumUpdateObservers => updateObservers.Count;
         [MemoryPackIgnore] public int NumTimers => timers.Count;
         [MemoryPackIgnore] public double ElapsedTime => elapsedTime;
-        [MemoryPackIgnore] public int DebugPoolSize => this.timerPool.Count;
+        [MemoryPackIgnore] public int DebugPoolSize => timerPool.Count;
 #endif
         
         private Timer GetTimerFromPool()

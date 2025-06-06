@@ -35,12 +35,12 @@ namespace NPBehave
             }
             else if (result == Result.BLOCKED)
             {
-                this.bWasBlocked = true;
+                bWasBlocked = true;
                 Clock.AddUpdateObserver(Guid);
             }
             else
             {
-                this.Stopped(result == Result.SUCCESS);
+                Stopped(result == Result.SUCCESS);
             }
         }
         
@@ -58,7 +58,7 @@ namespace NPBehave
             else
             {
                 Clock.RemoveUpdateObserver(Guid);
-                this.Stopped(result == Result.SUCCESS);
+                Stopped(result == Result.SUCCESS);
             }
         }
 
@@ -66,7 +66,7 @@ namespace NPBehave
         {
             Result result = OnAction(Request.CANCEL);
             Clock.RemoveUpdateObserver(Guid);
-            this.Stopped(result == Result.SUCCESS);
+            Stopped(result == Result.SUCCESS);
         }
         
         protected abstract Result OnAction(Request request);

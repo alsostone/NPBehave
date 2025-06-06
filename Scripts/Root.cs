@@ -27,7 +27,7 @@ namespace NPBehave
         {
             this.behaveWorld = behaveWorld;
             this.blackboard = blackboard;
-            this.SetRoot(this);
+            SetRoot(this);
         }
 
         public sealed override void SetRoot(Root rootNode)
@@ -37,15 +37,15 @@ namespace NPBehave
 
         protected override void DoStart()
         {
-            this.blackboard.Enable();
-            this.Decoratee.Start();
+            blackboard.Enable();
+            Decoratee.Start();
         }
 
         protected override void DoStop()
         {
-            if (this.Decoratee.IsActive)
+            if (Decoratee.IsActive)
             {
-                this.Decoratee.Stop();
+                Decoratee.Stop();
             }
             else
             {
@@ -62,14 +62,14 @@ namespace NPBehave
             }
             else
             {
-                this.blackboard.Disable();
+                blackboard.Disable();
                 Stopped(success);
             }
         }
 
         public override void OnTimerReached()
         {
-            this.Decoratee.Start();
+            Decoratee.Start();
         }
     }
 }

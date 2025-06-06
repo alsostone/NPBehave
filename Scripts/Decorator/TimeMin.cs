@@ -15,14 +15,14 @@ namespace NPBehave
         public TimeMin(float limit, Node decoratee) : base("TimeMin", decoratee)
         {
             this.limit = limit;
-            this.randomVariation = this.limit * 0.05f;
-            this.waitOnFailure = false;
+            randomVariation = this.limit * 0.05f;
+            waitOnFailure = false;
         }
 
         public TimeMin(float limit, bool waitOnFailure, Node decoratee) : base("TimeMin", decoratee)
         {
             this.limit = limit;
-            this.randomVariation = this.limit * 0.05f;
+            randomVariation = this.limit * 0.05f;
             this.waitOnFailure = waitOnFailure;
         }
 

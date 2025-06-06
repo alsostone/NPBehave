@@ -14,7 +14,7 @@ namespace NPBehave
 
         protected override void DoStop()
         {
-            this.Stopped(successWhenStopped);
+            Stopped(successWhenStopped);
         }
     }
 }

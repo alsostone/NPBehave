@@ -56,7 +56,7 @@ namespace NPBehave
             }
 
             var o = Blackboard.Get<T>(blackboardKey);
-            switch (this.op)
+            switch (op)
             {
                 case Operator.IS_SET: return true;
                 case Operator.IS_EQUAL: return o.CompareTo(value) == 0;
@@ -71,7 +71,7 @@ namespace NPBehave
 
         public override string ToString()
         {
-            return "(" + this.op + ") " + this.blackboardKey + " ? " + this.value;
+            return "(" + op + ") " + blackboardKey + " ? " + value;
         }
     }
 }

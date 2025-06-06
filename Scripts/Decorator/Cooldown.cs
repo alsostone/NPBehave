@@ -43,7 +43,7 @@ namespace NPBehave
         {
         	this.startAfterDecoratee = startAfterDecoratee;
         	this.cooldownTime = cooldownTime;
-        	this.randomVariation = cooldownTime * 0.1f;
+        	randomVariation = cooldownTime * 0.1f;
         	this.resetOnFailiure = resetOnFailiure;
         	this.failOnCooldown = failOnCooldown;
         }
@@ -60,24 +60,24 @@ namespace NPBehave
         {
             this.startAfterDecoratee = startAfterDecoratee;
             this.cooldownTime = cooldownTime;
-            this.randomVariation = cooldownTime * 0.1f;
+            randomVariation = cooldownTime * 0.1f;
             this.resetOnFailiure = resetOnFailiure;
         }
 
         public Cooldown(float cooldownTime, float randomVariation, Node decoratee) : base("TimeCooldown", decoratee)
         {
-            this.startAfterDecoratee = false;
+            startAfterDecoratee = false;
             this.cooldownTime = cooldownTime;
-            this.resetOnFailiure = false;
+            resetOnFailiure = false;
             this.randomVariation = randomVariation;
         }
 
         public Cooldown(float cooldownTime, Node decoratee) : base("TimeCooldown", decoratee)
         {
-            this.startAfterDecoratee = false;
+            startAfterDecoratee = false;
             this.cooldownTime = cooldownTime;
-            this.resetOnFailiure = false;
-            this.randomVariation = cooldownTime * 0.1f;
+            resetOnFailiure = false;
+            randomVariation = cooldownTime * 0.1f;
         }
 
         protected override void DoStart()

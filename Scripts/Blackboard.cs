@@ -48,17 +48,17 @@ namespace NPBehave
 
         internal Blackboard(Blackboard parent)
         {
-            this.parentGuid = parent?.Guid ?? 0;
+            parentGuid = parent?.Guid ?? 0;
         }
 
         internal void Set(BehaveWorld world)
         {
-            this.behaveWorld = world;
+            behaveWorld = world;
             
             // 注册到黑板的意义：通过Guid找到该节点，后调用该节点的方法
-            if (this.Guid < 0)
-                this.Guid = world.GetNextGuid();
-            world.IdNodeMapping.Add(this.Guid, this);
+            if (Guid < 0)
+                Guid = world.GetNextGuid();
+            world.IdNodeMapping.Add(Guid, this);
             
             parent = world.GetBlackboard(parentGuid);
             clock = world.Clock;
@@ -66,21 +66,21 @@ namespace NPBehave
 
         public void Enable()
         {
-            if (this.parent != null)
+            if (parent != null)
             {
-                this.parent.children.Add(this.Guid);
+                parent.children.Add(Guid);
             }
         }
 
         public void Disable()
         {
-            if (this.parent != null)
+            if (parent != null)
             {
-                this.parent.children.Remove(this.Guid);
+                parent.children.Remove(Guid);
             }
-            if (this.clock != null)
+            if (clock != null)
             {
-                this.clock.RemoveTimer(Guid);
+                clock.RemoveTimer(Guid);
             }
         }
 
@@ -100,25 +100,25 @@ namespace NPBehave
 
         public void Set(string key, object value)
         {
-            if (this.parent != null && this.parent.Isset(key))
+            if (parent != null && parent.Isset(key))
             {
-                this.parent.Set(key, value);
+                parent.Set(key, value);
             }
             else
             {
-                if (!this.data.ContainsKey(key))
+                if (!data.ContainsKey(key))
                 {
-                    this.data[key] = value;
-                    this.notifications.Add(new Notification(key, NotifyType.ADD, value));
-                    this.clock.AddTimer(0f, 0, Guid);
+                    data[key] = value;
+                    notifications.Add(new Notification(key, NotifyType.ADD, value));
+                    clock.AddTimer(0f, 0, Guid);
                 }
                 else
                 {
-                    if ((this.data[key] == null && value != null) || (this.data[key] != null && !this.data[key].Equals(value)))
+                    if ((data[key] == null && value != null) || (data[key] != null && !data[key].Equals(value)))
                     {
-                        this.data[key] = value;
-                        this.notifications.Add(new Notification(key, NotifyType.CHANGE, value));
-                        this.clock.AddTimer(0f, 0, Guid);
+                        data[key] = value;
+                        notifications.Add(new Notification(key, NotifyType.CHANGE, value));
+                        clock.AddTimer(0f, 0, Guid);
                     }
                 }
             }
@@ -126,11 +126,11 @@ namespace NPBehave
 
         public void Unset(string key)
         {
-            if (this.data.ContainsKey(key))
+            if (data.ContainsKey(key))
             {
-                this.data.Remove(key);
-                this.notifications.Add(new Notification(key, NotifyType.REMOVE, null));
-                this.clock.AddTimer(0f, 0, Guid);
+                data.Remove(key);
+                notifications.Add(new Notification(key, NotifyType.REMOVE, null));
+                clock.AddTimer(0f, 0, Guid);
             }
         }
         
@@ -146,13 +146,13 @@ namespace NPBehave
 
         public object Get(string key)
         {
-            if (this.data.ContainsKey(key))
+            if (data.ContainsKey(key))
             {
                 return data[key];
             }
-            else if (this.parent != null)
+            else if (parent != null)
             {
-                return this.parent.Get(key);
+                return parent.Get(key);
             }
             else
             {
@@ -162,7 +162,7 @@ namespace NPBehave
 
         public bool Isset(string key)
         {
-            return this.data.ContainsKey(key) || (this.parent != null && this.parent.Isset(key));
+            return data.ContainsKey(key) || (parent != null && parent.Isset(key));
         }
 
 #if UNITY_EDITOR
@@ -170,9 +170,9 @@ namespace NPBehave
         {
             get
             {
-                if (this.parent != null)
+                if (parent != null)
                 {
-                    List<string> keys = this.parent.Keys;
+                    List<string> keys = parent.Keys;
                     keys.AddRange(data.Keys);
                     return keys;
                 }
