@@ -15,14 +15,14 @@ namespace NPBehave
         [MemoryPackIgnore] public Operator Operator => op;
 
         [MemoryPackConstructor]
-        public BlackboardInt(string blackboardKey, Operator op, int value, Stops stopsOnChange, Node decoratee) : base("BlackboardCondition", stopsOnChange, decoratee)
+        public BlackboardInt(string blackboardKey, Operator op, int value, Stops stopsOnChange, Node decoratee) : base("BlackboardInt", stopsOnChange, decoratee)
         {
             this.op = op;
             this.blackboardKey = blackboardKey;
             this.value = value;
         }
         
-        public BlackboardInt(string blackboardKey, Operator op, Stops stopsOnChange, Node decoratee) : base("BlackboardCondition", stopsOnChange, decoratee)
+        public BlackboardInt(string blackboardKey, Operator op, Stops stopsOnChange, Node decoratee) : base("BlackboardInt", stopsOnChange, decoratee)
         {
             this.op = op;
             this.blackboardKey = blackboardKey;
