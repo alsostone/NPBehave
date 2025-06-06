@@ -4,25 +4,25 @@ using MemoryPack;
 namespace NPBehave
 {
     [MemoryPackable]
-    public partial class BlackboardCondition<T> : ObservingDecorator where T : IComparable<T>
+    public partial class BlackboardFloat : ObservingDecorator
     {
         [MemoryPackInclude] private readonly string blackboardKey;
-        [MemoryPackInclude] private readonly T value;
+        [MemoryPackInclude] private readonly float value;
         [MemoryPackInclude] private readonly Operator op;
 
         [MemoryPackIgnore] public string BlackboardKey => blackboardKey;
-        [MemoryPackIgnore] public T Value => value;
+        [MemoryPackIgnore] public float Value => value;
         [MemoryPackIgnore] public Operator Operator => op;
 
         [MemoryPackConstructor]
-        public BlackboardCondition(string blackboardKey, Operator op, T value, Stops stopsOnChange, Node decoratee) : base("BlackboardCondition", stopsOnChange, decoratee)
+        public BlackboardFloat(string blackboardKey, Operator op, float value, Stops stopsOnChange, Node decoratee) : base("BlackboardCondition", stopsOnChange, decoratee)
         {
             this.op = op;
             this.blackboardKey = blackboardKey;
             this.value = value;
         }
         
-        public BlackboardCondition(string blackboardKey, Operator op, Stops stopsOnChange, Node decoratee) : base("BlackboardCondition", stopsOnChange, decoratee)
+        public BlackboardFloat(string blackboardKey, Operator op, Stops stopsOnChange, Node decoratee) : base("BlackboardCondition", stopsOnChange, decoratee)
         {
             this.op = op;
             this.blackboardKey = blackboardKey;
@@ -38,7 +38,7 @@ namespace NPBehave
             Blackboard.RemoveObserver(blackboardKey, Guid);
         }
         
-        public override void OnObservingChanged(NotifyType type, object changedValue)
+        public override void OnObservingChanged(NotifyType type)
         {
             Evaluate();
         }
@@ -50,12 +50,12 @@ namespace NPBehave
                 return true;
             }
 
-            if (!Blackboard.Isset(blackboardKey))
+            if (!Blackboard.IsSetFloat(blackboardKey))
             {
                 return op == Operator.IS_NOT_SET;
             }
 
-            var o = Blackboard.Get<T>(blackboardKey);
+            var o = Blackboard.GetFloat(blackboardKey);
             switch (op)
             {
                 case Operator.IS_SET: return true;

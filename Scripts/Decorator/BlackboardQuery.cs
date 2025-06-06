@@ -27,7 +27,7 @@ namespace NPBehave
             }
         }
         
-        public override void OnObservingChanged(NotifyType type, object changedValue)
+        public override void OnObservingChanged(NotifyType type)
         {
             Evaluate();
         }

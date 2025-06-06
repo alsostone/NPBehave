@@ -45,7 +45,7 @@ namespace NPBehave
             return ++currentGuid;
         }
         
-        internal Blackboard GetBlackboard(int guid)
+        public Blackboard GetBlackboard(int guid)
         {
             if (IdNodeMapping.TryGetValue(guid, out var receiver))
             {

@@ -118,10 +118,8 @@ namespace NPBehave
 
             GUILayout.BeginHorizontal();
             DrawBlackboardKeyAndValues("Blackboard:", selectedDebugger.BehaviorTree.Blackboard);
-            if (selectedDebugger.CustomStats.Keys.Count > 0)
-            {
-                DrawBlackboardKeyAndValues("Custom Stats:", selectedDebugger.CustomStats);
-            }
+            DrawBlackboardKeyAndValues("Custom Stats:", selectedDebugger.CustomStats);
+            
             DrawStats(selectedDebugger);
             GUILayout.EndHorizontal();
             GUILayout.Space(10);
@@ -173,10 +171,20 @@ namespace NPBehave
 
                 EditorGUILayout.BeginVertical(EditorStyles.helpBox);
                 {
-                    List<string> keys = blackboard.Keys;
-                    foreach (string key in keys)
+                    var boolKeys = blackboard.BoolKeys;
+                    foreach (string key in boolKeys)
                     {
-                        DrawKeyValue(key, blackboard.Get(key).ToString());
+                        DrawKeyValue(key, blackboard.GetBool(key).ToString());
+                    }
+                    var intKeys = blackboard.IntKeys;
+                    foreach (string key in intKeys)
+                    {
+                        DrawKeyValue(key, blackboard.GetInt(key).ToString());
+                    }
+                    var floatKeys = blackboard.FloatKeys;
+                    foreach (string key in floatKeys)
+                    {
+                        DrawKeyValue(key, blackboard.GetFloat(key).ToString("F2"));
                     }
                 }
                 EditorGUILayout.EndVertical();
@@ -305,8 +313,7 @@ namespace NPBehave
                 bool drawLabel = !string.IsNullOrEmpty(node.Label);
                 string label = node.Label;
 
-                var type = node.GetType();
-                if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(BlackboardCondition<>))
+                if (node is BlackboardBool or BlackboardInt or BlackboardFloat)
                 {
                     dynamic nodeBlackboardCond = node;
                     tagName = nodeBlackboardCond.BlackboardKey + " " + operatorToString[nodeBlackboardCond.Operator] + " " + nodeBlackboardCond.Value;

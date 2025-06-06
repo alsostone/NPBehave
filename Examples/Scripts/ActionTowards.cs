@@ -19,7 +19,10 @@ namespace NPBehave.Examples
                     return Result.PROGRESS;
                 case Request.UPDATE:
                 {
-                    Vector3 pos = Blackboard.Get<Vector3>("playerLocalPos");
+                    var x = Blackboard.GetFloat("playerLocalPosX");
+                    var y = Blackboard.GetFloat("playerLocalPosY");
+                    var z = Blackboard.GetFloat("playerLocalPosZ");
+                    Vector3 pos = new Vector3(x, y, z);
                     transform.localPosition += pos * (0.5f * Time.deltaTime);
                     return Result.PROGRESS;
                 }

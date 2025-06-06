@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using MemoryPack;
+using UnityEngine.Playables;
 
 namespace NPBehave
 {
@@ -11,25 +12,26 @@ namespace NPBehave
     }
     
     [MemoryPackable]
+    public partial struct Notification
+    {
+        public readonly string key;
+        public readonly NotifyType type;
+
+        public Notification(string key, NotifyType type)
+        {
+            this.key = key;
+            this.type = type;
+        }
+    }
+    
+    [MemoryPackable]
     public partial class Blackboard : Receiver
     {
-        private struct Notification
-        {
-            public readonly string key;
-            public readonly NotifyType type;
-            public readonly object value;
-
-            public Notification(string key, NotifyType type, object value)
-            {
-                this.key = key;
-                this.type = type;
-                this.value = value;
-            }
-        }
-
         [MemoryPackInclude] private int parentGuid;
         [MemoryPackInclude] private HashSet<int> children = new HashSet<int>();
-        [MemoryPackInclude] private Dictionary<string, object> data = new Dictionary<string, object>();
+        [MemoryPackInclude] private Dictionary<string, bool> dataBool = new Dictionary<string, bool>();
+        [MemoryPackInclude] private Dictionary<string, int> dataInt = new Dictionary<string, int>();
+        [MemoryPackInclude] private Dictionary<string, float> dataFloat = new Dictionary<string, float>();
         
         [MemoryPackInclude] private bool isNotifying = false;
         [MemoryPackInclude] private List<Notification> notifications = new List<Notification>();
@@ -83,102 +85,219 @@ namespace NPBehave
                 clock.RemoveTimer(Guid);
             }
         }
-
-        public object this[string key]
+        
+        #region Set 
+        public void SetBool(string key, bool value)
         {
-            get => Get(key);
-            set => Set(key, value);
-        }
-
-        public void Set(string key)
-        {
-            if (!Isset(key))
+            if (parent != null && parent.IsSetBool(key))
             {
-                Set(key, null);
-            }
-        }
-
-        public void Set(string key, object value)
-        {
-            if (parent != null && parent.Isset(key))
-            {
-                parent.Set(key, value);
+                parent.SetBool(key, value);
             }
             else
             {
-                if (!data.ContainsKey(key))
+                if (!dataBool.ContainsKey(key))
                 {
-                    data[key] = value;
-                    notifications.Add(new Notification(key, NotifyType.ADD, value));
+                    dataBool[key] = value;
+                    notifications.Add(new Notification(key, NotifyType.ADD));
                     clock.AddTimer(0f, 0, Guid);
                 }
                 else
                 {
-                    if ((data[key] == null && value != null) || (data[key] != null && !data[key].Equals(value)))
+                    if (!dataBool[key].Equals(value))
                     {
-                        data[key] = value;
-                        notifications.Add(new Notification(key, NotifyType.CHANGE, value));
+                        dataBool[key] = value;
+                        notifications.Add(new Notification(key, NotifyType.CHANGE));
                         clock.AddTimer(0f, 0, Guid);
                     }
                 }
             }
         }
-
-        public void Unset(string key)
+        
+        public void SetInt(string key, int value)
         {
-            if (data.ContainsKey(key))
+            if (parent != null && parent.IsSetInt(key))
             {
-                data.Remove(key);
-                notifications.Add(new Notification(key, NotifyType.REMOVE, null));
+                parent.SetInt(key, value);
+            }
+            else
+            {
+                if (!dataInt.ContainsKey(key))
+                {
+                    dataInt[key] = value;
+                    notifications.Add(new Notification(key, NotifyType.ADD));
+                    clock.AddTimer(0f, 0, Guid);
+                }
+                else
+                {
+                    if (!dataInt[key].Equals(value))
+                    {
+                        dataInt[key] = value;
+                        notifications.Add(new Notification(key, NotifyType.CHANGE));
+                        clock.AddTimer(0f, 0, Guid);
+                    }
+                }
+            }
+        }
+        
+        public void SetFloat(string key, float value)
+        {
+            if (parent != null && parent.IsSetFloat(key))
+            {
+                parent.SetFloat(key, value);
+            }
+            else
+            {
+                if (!dataFloat.ContainsKey(key))
+                {
+                    dataFloat[key] = value;
+                    notifications.Add(new Notification(key, NotifyType.ADD));
+                    clock.AddTimer(0f, 0, Guid);
+                }
+                else
+                {
+                    if (!dataFloat[key].Equals(value))
+                    {
+                        dataFloat[key] = value;
+                        notifications.Add(new Notification(key, NotifyType.CHANGE));
+                        clock.AddTimer(0f, 0, Guid);
+                    }
+                }
+            }
+        }
+        #endregion
+        
+        #region UnSet
+        public void UnSetBool(string key)
+        {
+            if (dataBool.ContainsKey(key))
+            {
+                dataBool.Remove(key);
+                notifications.Add(new Notification(key, NotifyType.REMOVE));
+                clock.AddTimer(0f, 0, Guid);
+            }
+        }
+
+        public void UnSetInt(string key)
+        {
+            if (dataInt.ContainsKey(key))
+            {
+                dataInt.Remove(key);
+                notifications.Add(new Notification(key, NotifyType.REMOVE));
                 clock.AddTimer(0f, 0, Guid);
             }
         }
         
-        public T Get<T>(string key)
+        public void UnSetFloat(string key)
         {
-            object result = Get(key);
-            if (result == null)
+            if (dataFloat.ContainsKey(key))
             {
-                return default(T);
+                dataFloat.Remove(key);
+                notifications.Add(new Notification(key, NotifyType.REMOVE));
+                clock.AddTimer(0f, 0, Guid);
             }
-            return (T)result;
         }
+        #endregion
+        
+        #region IsSet
+        public bool IsSetBool(string key)
+        {
+            return dataBool.ContainsKey(key) || (parent != null && parent.IsSetBool(key));
+        }
+        public bool IsSetInt(string key)
+        {
+            return dataInt.ContainsKey(key) || (parent != null && parent.IsSetInt(key));
+        }
+        public bool IsSetFloat(string key)
+        {
+            return dataFloat.ContainsKey(key) || (parent != null && parent.IsSetFloat(key));
+        }
+        #endregion
 
-        public object Get(string key)
+        #region Get
+        public bool GetBool(string key)
         {
-            if (data.ContainsKey(key))
+            if (dataBool.TryGetValue(key, out var value))
             {
-                return data[key];
+                return value;
             }
-            else if (parent != null)
+            if (parent != null)
             {
-                return parent.Get(key);
+                return parent.GetBool(key);
             }
-            else
-            {
-                return null;
-            }
+            return false;
         }
-
-        public bool Isset(string key)
+        public int GetInt(string key)
         {
-            return data.ContainsKey(key) || (parent != null && parent.Isset(key));
+            if (dataInt.TryGetValue(key, out var value))
+            {
+                return value;
+            }
+            if (parent != null)
+            {
+                return parent.GetInt(key);
+            }
+            return 0;
         }
+        public float GetFloat(string key)
+        {
+            if (dataFloat.TryGetValue(key, out var value))
+            {
+                return value;
+            }
+            if (parent != null)
+            {
+                return parent.GetFloat(key);
+            }
+            return 0f;
+        }
+        #endregion
 
 #if UNITY_EDITOR
-        [MemoryPackIgnore] public List<string> Keys
+        [MemoryPackIgnore] public List<string> BoolKeys
         {
             get
             {
                 if (parent != null)
                 {
-                    List<string> keys = parent.Keys;
-                    keys.AddRange(data.Keys);
+                    List<string> keys = parent.BoolKeys;
+                    keys.AddRange(dataBool.Keys);
                     return keys;
                 }
                 else
                 {
-                    return new List<string>(data.Keys);
+                    return new List<string>(dataBool.Keys);
+                }
+            }
+        }
+        [MemoryPackIgnore] public List<string> IntKeys
+        {
+            get
+            {
+                if (parent != null)
+                {
+                    List<string> keys = parent.IntKeys;
+                    keys.AddRange(dataInt.Keys);
+                    return keys;
+                }
+                else
+                {
+                    return new List<string>(dataInt.Keys);
+                }
+            }
+        }
+        [MemoryPackIgnore] public List<string> FloatKeys
+        {
+            get
+            {
+                if (parent != null)
+                {
+                    List<string> keys = parent.FloatKeys;
+                    keys.AddRange(dataFloat.Keys);
+                    return keys;
+                }
+                else
+                {
+                    return new List<string>(dataFloat.Keys);
                 }
             }
         }
@@ -301,7 +420,7 @@ namespace NPBehave
                     {
                         continue;
                     }
-                    behaveWorld.IdNodeMapping[observer].OnObservingChanged(notification.type, notification.value);
+                    behaveWorld.IdNodeMapping[observer].OnObservingChanged(notification.type);
                 }
             }
 

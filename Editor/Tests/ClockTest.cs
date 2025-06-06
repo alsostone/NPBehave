@@ -24,8 +24,8 @@ namespace NPBehave
             }
             public override void OnTimerReached()
             {
-                Assert.AreEqual(value, Blackboard.Get<int>(key));
-                Blackboard.Set(key, Blackboard.Get<int>(key) + 1);
+                Assert.AreEqual(value, Blackboard.GetInt(key));
+                Blackboard.SetInt(key, Blackboard.GetInt(key) + 1);
             }
         }
 
@@ -39,11 +39,11 @@ namespace NPBehave
                     new IncrBlackboardKey("currentAction", 3),
                     new IncrBlackboardKey("currentAction", 4)
                 ));
-            behaviorTree.Blackboard.Set("currentAction", 0);
+            behaviorTree.Blackboard.SetInt("currentAction", 0);
             behaviorTree.Start();
 
             BehaveWorld.Update(0);
-            Assert.AreEqual(5, behaviorTree.Blackboard.Get<int>("currentAction"));
+            Assert.AreEqual(5, behaviorTree.Blackboard.GetInt("currentAction"));
         }
         
         // 已经不是一个单独功能，而是变成了一个复合系统，改测试用例很花时间，下边儿不改了。

@@ -4,21 +4,22 @@ using MemoryPack;
 namespace NPBehave
 {
     [MemoryPackable]
+    public partial class Timer
+    {
+        public double scheduledTime = 0f;
+        public int repeat = 0;
+        public double delay = 0f;
+        public float randomVariance = 0.0f;
+
+        public void ScheduleAbsoluteTime(double elapsedTime)
+        {
+            scheduledTime = elapsedTime + delay - randomVariance * 0.5f + randomVariance * UnityEngine.Random.value;
+        }
+    }
+    
+    [MemoryPackable]
     public partial class Clock
     {
-        private class Timer
-        {
-            public double scheduledTime = 0f;
-            public int repeat = 0;
-            public double delay = 0f;
-            public float randomVariance = 0.0f;
-
-            public void ScheduleAbsoluteTime(double elapsedTime)
-            {
-                scheduledTime = elapsedTime + delay - randomVariance * 0.5f + randomVariance * UnityEngine.Random.value;
-            }
-        }
-        
         [MemoryPackInclude] private double elapsedTime = 0f;
         [MemoryPackInclude] private bool isInUpdate = false;
         

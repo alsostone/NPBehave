@@ -38,8 +38,10 @@ public class NPBehaveExampleNavMoveToEnemy : MonoBehaviour
         {
             Transform playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
             Vector3 playerPos = playerTransform.position;
-            Blackboard["playerPos"] = playerPos;
-            Blackboard["playerDistance"] = (playerPos - transform.position).magnitude;
+            Blackboard.SetFloat("playerPosX", playerPos.x);
+            Blackboard.SetFloat("playerPosY", playerPos.y);
+            Blackboard.SetFloat("playerPosZ", playerPos.z);
+            Blackboard.SetFloat("playerDistance", (playerPos - transform.position).magnitude);
         }
     }
     
@@ -56,7 +58,7 @@ public class NPBehaveExampleNavMoveToEnemy : MonoBehaviour
 
                     // check the 'playerDistance' blackboard value.
                     // When the condition changes, we want to immediately jump in or out of this path, thus we use IMMEDIATE_RESTART
-                    new BlackboardCondition<float>("playerDistance", Operator.IS_SMALLER, 7.5f, Stops.IMMEDIATE_RESTART,
+                    new BlackboardFloat("playerDistance", Operator.IS_SMALLER, 7.5f, Stops.IMMEDIATE_RESTART,
 
                         // the player is in our range of 7.5f
                         new Sequence(

@@ -16,7 +16,7 @@ namespace NPBehave
         
         protected override void DoStart()
         {
-            float delay = Blackboard.Get<float>(blackboardKey);
+            float delay = Blackboard.GetFloat(blackboardKey);
             if (delay < 0)
             {
                 delay = 0;

@@ -14,7 +14,7 @@ public class NPBehaveExampleHelloBlackboardsAI : MonoBehaviour
         
         protected override void OnService()
         {
-            Blackboard["foo"] = !Blackboard.Get<bool>("foo");
+            Blackboard.SetBool("foo", !Blackboard.GetBool("foo"));
         }
     }
 
@@ -30,7 +30,7 @@ public class NPBehaveExampleHelloBlackboardsAI : MonoBehaviour
                     // Check the 'toggled' flag. Stops.IMMEDIATE_RESTART means that the Blackboard will be observed for changes 
                     // while this or any lower priority branches are executed. If the value changes, the corresponding branch will be
                     // stopped and it will be immediately jump to the branch that now matches the condition.
-                    new BlackboardCondition<bool>("foo", Operator.IS_EQUAL, true, Stops.IMMEDIATE_RESTART,
+                    new BlackboardBool("foo", Operator.IS_EQUAL, true, Stops.IMMEDIATE_RESTART,
 
                         // when 'toggled' is true, this branch will get executed.
                         new Sequence(

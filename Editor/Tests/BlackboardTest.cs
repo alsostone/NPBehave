@@ -9,9 +9,9 @@ namespace NPBehave
         {
             private string observerName;
             private string key;
-            private object value;
+            private bool value;
             
-            public SetBlackboardKey(string observerName, string key, object value) : base("SetBlackboardKey")
+            public SetBlackboardKey(string observerName, string key, bool value) : base("SetBlackboardKey")
             {
                 this.observerName = observerName;
                 this.key = key;
@@ -25,9 +25,9 @@ namespace NPBehave
             {
                 Blackboard.RemoveObserver(this.observerName, Guid);
             }
-            public override void OnObservingChanged(NotifyType type, object changedValue)
+            public override void OnObservingChanged(NotifyType type)
             {
-                Blackboard.Set(key, value);
+                Blackboard.SetBool(key, value);
             }
         }
         
@@ -37,11 +37,11 @@ namespace NPBehave
             var setKey = new SetBlackboardKey("test", "notified", true);
             TestRoot behaviorTree = CreateBehaviorTree(setKey);
             
-            Blackboard.Set("notified", false);
+            Blackboard.SetBool("notified", false);
             behaviorTree.Start();
 
-            Blackboard.Set("test", 1f);
-            Assert.IsFalse(behaviorTree.Blackboard.Get<bool>("notified"));
+            Blackboard.SetFloat("test", 1f);
+            Assert.IsFalse(behaviorTree.Blackboard.GetBool("notified"));
         }
 
         [Test]
@@ -50,12 +50,12 @@ namespace NPBehave
             var setKey = new SetBlackboardKey("test", "notified", true);
             TestRoot behaviorTree = CreateBehaviorTree(setKey);
             
-            Blackboard.Set("notified", false);
+            Blackboard.SetBool("notified", false);
             behaviorTree.Start();
             
-            Blackboard.Set("test", 1f);
+            Blackboard.SetFloat("test", 1f);
             BehaveWorld.Update(1f);
-            Assert.IsTrue(Blackboard.Get<bool>("notified"));
+            Assert.IsTrue(Blackboard.GetBool("notified"));
         }
 
         [Test]
@@ -63,13 +63,12 @@ namespace NPBehave
         {
             var behaveWorld = new BehaveWorld();
             var blackboard = behaveWorld.CreateBlackboard();
-            blackboard.Set("test", 1f);
-            Assert.AreEqual(blackboard.Get("test"), 1f);
-            blackboard.Set("test", null);
-            blackboard.Set("test", null);
-            Assert.AreEqual(blackboard.Get("test"), null);
-            blackboard.Set("test", "something");
-            Assert.AreEqual(blackboard.Get("test"), "something");
+            blackboard.SetFloat("test", 1f);
+            Assert.AreEqual(blackboard.GetFloat("test"), 1f);
+            blackboard.UnSetFloat("test");
+            Assert.AreEqual(blackboard.GetFloat("test"), 0f);
+            blackboard.SetBool("test", true);
+            Assert.AreEqual(blackboard.GetBool("test"), true);
         }
 
         // check for https://github.com/meniku/NPBehave/issues/17
@@ -86,15 +85,15 @@ namespace NPBehave
             MockNode secondChild = new MockNode(false);
 
             // conditions for each subtree that listen the BB for events
-            var firstCondition = new BlackboardCondition<bool>("branch1", Operator.IS_EQUAL, true, Stops.IMMEDIATE_RESTART, firstChild);
-            var secondCondition = new BlackboardCondition<bool>("branch2", Operator.IS_EQUAL, true, Stops.IMMEDIATE_RESTART, secondChild);
+            var firstCondition = new BlackboardBool("branch1", Operator.IS_EQUAL, true, Stops.IMMEDIATE_RESTART, firstChild);
+            var secondCondition = new BlackboardBool("branch2", Operator.IS_EQUAL, true, Stops.IMMEDIATE_RESTART, secondChild);
 
             // set up the tree
             Selector selector = new Selector(firstCondition, secondCondition);
             TestRoot behaviorTree = new TestRoot(behaveWorld, blackboard, selector);
 
             // intially we want to activate branch2
-            rootBlackboard.Set("branch2", true);
+            rootBlackboard.SetBool("branch2", true);
 
             // start the tree
             behaviorTree.Start();
@@ -107,7 +106,7 @@ namespace NPBehave
             Assert.AreEqual(Node.State.ACTIVE, secondChild.CurrentState);
 
             // change keys so the first conditions get true, too
-            rootBlackboard.Set("branch1", true);
+            rootBlackboard.SetBool("branch1", true);
 
             // tick the timer to ensure the blackboard notifies the nodes
             behaveWorld.Update(0.1f);

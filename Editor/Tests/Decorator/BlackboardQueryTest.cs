@@ -11,8 +11,8 @@ namespace NPBehave
             }
             protected override bool IsConditionMet()
             {
-                float f1 = Blackboard.Get<float>("key1");
-                float f2 = Blackboard.Get<float>("key2");
+                float f1 = Blackboard.GetFloat("key1");
+                float f2 = Blackboard.GetFloat("key2");
 
                 if ((f1 > 0.99) && (f2 < 5.99f))
                     return true;

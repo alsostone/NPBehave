@@ -33,8 +33,10 @@ public class NPBehaveExampleEnemyAI : MonoBehaviour
         protected override void OnService()
         {
             Vector3 playerLocalPos = transform.InverseTransformPoint(GameObject.FindGameObjectWithTag("Player").transform.position);
-            Blackboard["playerLocalPos"] = playerLocalPos;
-            Blackboard["playerDistance"] = playerLocalPos.magnitude;
+            Blackboard.SetFloat("playerLocalPosX", playerLocalPos.x);
+            Blackboard.SetFloat("playerLocalPosY", playerLocalPos.y);
+            Blackboard.SetFloat("playerLocalPosZ", playerLocalPos.z);
+            Blackboard.SetFloat("playerDistance", playerLocalPos.magnitude);
         }
     }
     
@@ -51,7 +53,7 @@ public class NPBehaveExampleEnemyAI : MonoBehaviour
 
                     // check the 'playerDistance' blackboard value.
                     // When the condition changes, we want to immediately jump in or out of this path, thus we use IMMEDIATE_RESTART
-                    new BlackboardCondition<float>("playerDistance", Operator.IS_SMALLER, 7.5f, Stops.IMMEDIATE_RESTART,
+                    new BlackboardFloat("playerDistance", Operator.IS_SMALLER, 7.5f, Stops.IMMEDIATE_RESTART,
 
                         // the player is in our range of 7.5f
                         new Sequence(

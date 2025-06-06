@@ -73,32 +73,12 @@ namespace NPBehave.Examples
 
         private void moveToBlackboardKey()
         {
-            object target = Blackboard.Get(blackboardKey);
-            if (target == null)
-            {
-                stopAndCleanUp(false);
-                return;
-            }
-
+            var x = Blackboard.GetFloat(blackboardKey + "X");
+            var y = Blackboard.GetFloat(blackboardKey + "Y");
+            var z = Blackboard.GetFloat(blackboardKey + "Z");
+            
             // get target location
-            Vector3 destination = Vector3.zero;
-            if (target is Transform)
-            {
-                if (updateFrequency >= 0.0f)
-                {
-                    destination = ((Transform)target).position;
-                }
-            }
-            else if (target is Vector3)
-            {
-                destination = (Vector3)target;
-            }
-            else
-            {
-                Debug.LogWarning("NavMoveTo: Blackboard Key '" + this.blackboardKey + "' contained unsupported type '" + target.GetType());
-                stopAndCleanUp(false);
-                return;
-            }
+            var destination = new Vector3(x, y, z);
 
             // set new destination
             agent.destination = destination;
