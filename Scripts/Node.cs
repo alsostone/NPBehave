@@ -25,7 +25,6 @@ namespace NPBehave
         [MemoryPackIgnore] public Container ParentNode { get; private set; }
         [MemoryPackIgnore] public Blackboard Blackboard => RootNode.RootBlackboard;
         [MemoryPackIgnore] public Clock Clock => RootNode.RootClock;
-        [MemoryPackIgnore] public BehaveWorld World => RootNode.RootBehaveWorld;
         [MemoryPackIgnore] public bool IsStopRequested => currentState == State.STOP_REQUESTED;
         [MemoryPackIgnore] public bool IsActive => currentState == State.ACTIVE;
         
@@ -40,8 +39,8 @@ namespace NPBehave
             
             // 注册到黑板的意义：通过Guid找到该节点，后调用该节点的方法
             if (Guid < 0)
-                Guid = World.GetNextGuid();
-            World.IdNodeMapping.Add(Guid, this);
+                Guid = RootNode.RootBehaveWorld.GetNextGuid();
+            RootNode.RootBehaveWorld.GuidReceiverMapping.Add(Guid, this);
         }
 
         public void SetParent(Container parent)

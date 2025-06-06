@@ -12,12 +12,13 @@ namespace NPBehave
         [MemoryPackInclude] private List<Blackboard> blackboards;
         [MemoryPackInclude] private readonly Dictionary<string, int> sharedBlackboards;
         
-        [MemoryPackIgnore] public readonly Dictionary<int, Receiver> IdNodeMapping = new Dictionary<int, Receiver>();
+        [MemoryPackIgnore] public readonly Dictionary<int, Receiver> GuidReceiverMapping = new Dictionary<int, Receiver>();
         
         public BehaveWorld()
         {
             Clock = new Clock();
             Clock.Set(this);
+            
             blackboards = new List<Blackboard>();
             sharedBlackboards = new Dictionary<string, int>();
         }
@@ -27,6 +28,7 @@ namespace NPBehave
         {
             Clock = clock;
             Clock.Set(this);
+            
             this.blackboards = blackboards;
             this.sharedBlackboards = sharedBlackboards;
         }
@@ -47,7 +49,7 @@ namespace NPBehave
         
         public Blackboard GetBlackboard(int guid)
         {
-            if (IdNodeMapping.TryGetValue(guid, out var receiver))
+            if (GuidReceiverMapping.TryGetValue(guid, out var receiver))
             {
                 return receiver as Blackboard;
             }

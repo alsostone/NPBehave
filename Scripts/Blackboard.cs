@@ -28,7 +28,7 @@ namespace NPBehave
     public partial class Blackboard : Receiver
     {
         [MemoryPackInclude] private int parentGuid;
-        [MemoryPackInclude] private HashSet<int> children = new HashSet<int>();
+        [MemoryPackInclude] private HashSet<int> childrenGuid = new HashSet<int>();
         [MemoryPackInclude] private Dictionary<string, bool> dataBool = new Dictionary<string, bool>();
         [MemoryPackInclude] private Dictionary<string, int> dataInt = new Dictionary<string, int>();
         [MemoryPackInclude] private Dictionary<string, float> dataFloat = new Dictionary<string, float>();
@@ -37,9 +37,9 @@ namespace NPBehave
         [MemoryPackInclude] private List<Notification> notifications = new List<Notification>();
         [MemoryPackInclude] private List<Notification> notificationsDispatch = new List<Notification>();
         
-        [MemoryPackInclude] private Dictionary<string, List<int>> observers = new Dictionary<string, List<int>>();
-        [MemoryPackInclude] private Dictionary<string, List<int>> addObservers = new Dictionary<string, List<int>>();
-        [MemoryPackInclude] private Dictionary<string, List<int>> removeObservers = new Dictionary<string, List<int>>();
+        [MemoryPackInclude] private Dictionary<string, List<int>> keyObserversMapping = new Dictionary<string, List<int>>();
+        [MemoryPackInclude] private Dictionary<string, List<int>> keyAddObserversMapping = new Dictionary<string, List<int>>();
+        [MemoryPackInclude] private Dictionary<string, List<int>> keyRemoveObserversMapping = new Dictionary<string, List<int>>();
         
         [MemoryPackIgnore] private BehaveWorld behaveWorld;
         [MemoryPackIgnore] private Blackboard parent;
@@ -50,7 +50,7 @@ namespace NPBehave
 
         internal Blackboard(Blackboard parent)
         {
-            parentGuid = parent?.Guid ?? 0;
+            parentGuid = parent?.Guid ?? -1;
         }
 
         internal void Set(BehaveWorld world)
@@ -60,7 +60,7 @@ namespace NPBehave
             // 注册到黑板的意义：通过Guid找到该节点，后调用该节点的方法
             if (Guid < 0)
                 Guid = world.GetNextGuid();
-            world.IdNodeMapping.Add(Guid, this);
+            world.GuidReceiverMapping.Add(Guid, this);
             
             parent = world.GetBlackboard(parentGuid);
             clock = world.Clock;
@@ -70,7 +70,7 @@ namespace NPBehave
         {
             if (parent != null)
             {
-                parent.children.Add(Guid);
+                parent.childrenGuid.Add(Guid);
             }
         }
 
@@ -78,7 +78,7 @@ namespace NPBehave
         {
             if (parent != null)
             {
-                parent.children.Remove(Guid);
+                parent.childrenGuid.Remove(Guid);
             }
             if (clock != null)
             {
@@ -95,7 +95,7 @@ namespace NPBehave
             }
             else
             {
-                if (!dataBool.ContainsKey(key))
+                if (!dataBool.TryGetValue(key, out var dataValue))
                 {
                     dataBool[key] = value;
                     notifications.Add(new Notification(key, NotifyType.ADD));
@@ -103,7 +103,7 @@ namespace NPBehave
                 }
                 else
                 {
-                    if (!dataBool[key].Equals(value))
+                    if (!dataValue.Equals(value))
                     {
                         dataBool[key] = value;
                         notifications.Add(new Notification(key, NotifyType.CHANGE));
@@ -121,7 +121,7 @@ namespace NPBehave
             }
             else
             {
-                if (!dataInt.ContainsKey(key))
+                if (!dataInt.TryGetValue(key, out var dataValue))
                 {
                     dataInt[key] = value;
                     notifications.Add(new Notification(key, NotifyType.ADD));
@@ -129,7 +129,7 @@ namespace NPBehave
                 }
                 else
                 {
-                    if (!dataInt[key].Equals(value))
+                    if (!dataValue.Equals(value))
                     {
                         dataInt[key] = value;
                         notifications.Add(new Notification(key, NotifyType.CHANGE));
@@ -147,7 +147,7 @@ namespace NPBehave
             }
             else
             {
-                if (!dataFloat.ContainsKey(key))
+                if (!dataFloat.TryGetValue(key, out var dataValue))
                 {
                     dataFloat[key] = value;
                     notifications.Add(new Notification(key, NotifyType.ADD));
@@ -155,7 +155,7 @@ namespace NPBehave
                 }
                 else
                 {
-                    if (!dataFloat[key].Equals(value))
+                    if (!dataValue.Equals(value))
                     {
                         dataFloat[key] = value;
                         notifications.Add(new Notification(key, NotifyType.CHANGE));
@@ -251,65 +251,65 @@ namespace NPBehave
             return 0f;
         }
         #endregion
-
+        
 #if UNITY_EDITOR
-        [MemoryPackIgnore] public List<string> BoolKeys
+        public void ForeachBool(System.Action<string, bool> action)
         {
-            get
+            if (parent != null)
             {
-                if (parent != null)
-                {
-                    List<string> keys = parent.BoolKeys;
-                    keys.AddRange(dataBool.Keys);
-                    return keys;
-                }
-                else
-                {
-                    return new List<string>(dataBool.Keys);
-                }
+                parent.ForeachBool(action);
+            }
+            foreach (var pair in dataBool)
+            {
+                action(pair.Key, pair.Value);
             }
         }
-        [MemoryPackIgnore] public List<string> IntKeys
+        
+        public void ForeachInt(System.Action<string, int> action)
         {
-            get
+            if (parent != null)
             {
-                if (parent != null)
-                {
-                    List<string> keys = parent.IntKeys;
-                    keys.AddRange(dataInt.Keys);
-                    return keys;
-                }
-                else
-                {
-                    return new List<string>(dataInt.Keys);
-                }
+                parent.ForeachInt(action);
+            }
+            foreach (var pair in dataInt)
+            {
+                action(pair.Key, pair.Value);
             }
         }
-        [MemoryPackIgnore] public List<string> FloatKeys
+        
+        public void ForeachFloat(System.Action<string, float> action)
         {
-            get
+            if (parent != null)
             {
-                if (parent != null)
-                {
-                    List<string> keys = parent.FloatKeys;
-                    keys.AddRange(dataFloat.Keys);
-                    return keys;
-                }
-                else
-                {
-                    return new List<string>(dataFloat.Keys);
-                }
+                parent.ForeachFloat(action);
+            }
+            foreach (var pair in dataFloat)
+            {
+                action(pair.Key, pair.Value);
             }
         }
+        
         [MemoryPackIgnore] public int NumObservers
         {
             get
             {
                 int count = 0;
-                foreach (string key in observers.Keys)
+                foreach (var pair in keyObserversMapping)
                 {
-                    count += observers[key].Count;
+                    count += pair.Value.Count;
                 }
+                return count;
+            }
+        }
+        
+        [MemoryPackIgnore] public int NumData
+        {
+            get
+            {
+                int count = 0;
+                count += dataBool.Count;
+                count += dataInt.Count;
+                count += dataFloat.Count;
                 return count;
             }
         }
@@ -317,75 +317,70 @@ namespace NPBehave
         
         public void AddObserver(string key, int observer)
         {
-            var keyObservers = GetKeyObservers(observers, key);
+            var observers = GetObservers(keyObserversMapping, key);
             if (!isNotifying)
             {
-                if (!keyObservers.Contains(observer))
+                if (!observers.Contains(observer))
                 {
-                    keyObservers.Add(observer);
+                    observers.Add(observer);
                 }
             }
             else
             {
-                if (!keyObservers.Contains(observer))
+                if (!observers.Contains(observer))
                 {
-                    var keyAddObservers = GetKeyObservers(addObservers, key);
-                    if (!keyAddObservers.Contains(observer))
+                    var addObservers = GetObservers(keyAddObserversMapping, key);
+                    if (!addObservers.Contains(observer))
                     {
-                        keyAddObservers.Add(observer);
+                        addObservers.Add(observer);
                     }
                 }
 
-                var keyRemoveObservers = GetKeyObservers(removeObservers, key);
-                if (keyRemoveObservers.Contains(observer))
+                var removeObservers = GetObservers(keyRemoveObserversMapping, key);
+                if (removeObservers.Contains(observer))
                 {
-                    keyRemoveObservers.Remove(observer);
+                    removeObservers.Remove(observer);
                 }
             }
         }
 
         public void RemoveObserver(string key, int observer)
         {
-            var keyObservers = GetKeyObservers(observers, key);
+            var observers = GetObservers(keyObserversMapping, key);
             if (!isNotifying)
             {
-                if (keyObservers.Contains(observer))
+                if (observers.Contains(observer))
                 {
-                    keyObservers.Remove(observer);
+                    observers.Remove(observer);
                 }
             }
             else
             {
-                var keyRemoveObservers = GetKeyObservers(removeObservers, key);
-                if (!keyRemoveObservers.Contains(observer))
+                var removeObservers = GetObservers(keyRemoveObserversMapping, key);
+                if (!removeObservers.Contains(observer))
                 {
-                    if (keyObservers.Contains(observer))
+                    if (observers.Contains(observer))
                     {
-                        keyRemoveObservers.Add(observer);
+                        removeObservers.Add(observer);
                     }
                 }
 
-                var keyAddObservers = GetKeyObservers(addObservers, key);
-                if (keyAddObservers.Contains(observer))
+                var addObservers = GetObservers(keyAddObserversMapping, key);
+                if (addObservers.Contains(observer))
                 {
-                    keyAddObservers.Remove(observer);
+                    addObservers.Remove(observer);
                 }
             }
         }
 
-        private List<int> GetKeyObservers(Dictionary<string, List<int>> target, string key)
+        private List<int> GetObservers(Dictionary<string, List<int>> targetMapping, string key)
         {
-            List<int> keyObservers;
-            if (target.ContainsKey(key))
+            if (!targetMapping.TryGetValue(key, out var observers))
             {
-                keyObservers = target[key];
+                observers = new List<int>();
+                targetMapping.Add(key, observers);
             }
-            else
-            {
-                keyObservers = new List<int>();
-                target[key] = keyObservers;
-            }
-            return keyObservers;
+            return observers;
         }
         
         public override void OnTimerReached()
@@ -397,7 +392,7 @@ namespace NPBehave
 
             notificationsDispatch.Clear();
             notificationsDispatch.AddRange(notifications);
-            foreach (var child in children)
+            foreach (var child in childrenGuid)
             {
                 var childBlackboard = behaveWorld.GetBlackboard(child);
                 childBlackboard.notifications.AddRange(notifications);
@@ -408,35 +403,36 @@ namespace NPBehave
             isNotifying = true;
             foreach (var notification in notificationsDispatch)
             {
-                if (!observers.ContainsKey(notification.key))
+                if (!keyObserversMapping.ContainsKey(notification.key))
                 {
                     continue;
                 }
 
-                var keyObservers = GetKeyObservers(observers, notification.key);
-                foreach (var observer in keyObservers)
+                var observers = GetObservers(keyObserversMapping, notification.key);
+                foreach (var observer in observers)
                 {
-                    if (removeObservers.ContainsKey(notification.key) && removeObservers[notification.key].Contains(observer))
+                    if (keyRemoveObserversMapping.TryGetValue(notification.key, out var removeObservers) && removeObservers.Contains(observer))
                     {
                         continue;
                     }
-                    behaveWorld.IdNodeMapping[observer].OnObservingChanged(notification.type);
+                    behaveWorld.GuidReceiverMapping[observer].OnObservingChanged(notification.type);
                 }
             }
 
-            foreach (var key in addObservers.Keys)
+            foreach (var pair in keyAddObserversMapping)
             {
-                GetKeyObservers(observers, key).AddRange(addObservers[key]);
+                GetObservers(keyObserversMapping, pair.Key).AddRange(pair.Value);
             }
-            foreach (var key in removeObservers.Keys)
+            foreach (var pair in keyRemoveObserversMapping)
             {
-                foreach (var action in removeObservers[key])
+                var observers = GetObservers(keyObserversMapping, pair.Key);
+                foreach (var action in pair.Value)
                 {
-                    GetKeyObservers(observers, key).Remove(action);
+                    observers.Remove(action);
                 }
             }
-            addObservers.Clear();
-            removeObservers.Clear();
+            keyAddObserversMapping.Clear();
+            keyRemoveObserversMapping.Clear();
 
             isNotifying = false;
         }

@@ -31,13 +31,13 @@ namespace NPBehave
         [MemoryPackInclude] private HashSet<int> addObservers = new HashSet<int>();
         [MemoryPackInclude] private HashSet<int> removeObservers = new HashSet<int>();
         
-        [MemoryPackIgnore] private BehaveWorld world;
+        [MemoryPackIgnore] private BehaveWorld behaveWorld;
         [MemoryPackIgnore] private readonly Queue<Timer> timerPool = new Queue<Timer>();
 
         internal Clock() { }
-        internal void Set(BehaveWorld center)
+        internal void Set(BehaveWorld world)
         {
-            world = center;
+            behaveWorld = world;
         }
         
         /// <summary>Register a timer function</summary>
@@ -205,7 +205,7 @@ namespace NPBehave
             {
                 if (!removeObservers.Contains(action))
                 {
-                    world.IdNodeMapping[action].OnTimerReached();
+                    behaveWorld.GuidReceiverMapping[action].OnTimerReached();
                 }
             }
 
@@ -229,7 +229,7 @@ namespace NPBehave
                         timer.repeat--;
                     }
                     
-                    world.IdNodeMapping[callback].OnTimerReached();
+                    behaveWorld.GuidReceiverMapping[callback].OnTimerReached();
 					timer.ScheduleAbsoluteTime(elapsedTime);
                 }
             }
@@ -242,13 +242,13 @@ namespace NPBehave
             {
                 updateObservers.Remove(action);
             }
-            foreach (var action in addTimers.Keys)
+            foreach (var pair in addTimers)
             {
-                if (timers.TryGetValue(action, out var timer))
+                if (timers.TryGetValue(pair.Key, out var timer))
                 {
                     timerPool.Enqueue(timer);
                 }
-                timers[action] = addTimers[action];
+                timers[pair.Key] = pair.Value;
             }
             foreach (var action in removeTimers)
             {

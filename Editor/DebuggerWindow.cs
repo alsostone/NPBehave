@@ -118,7 +118,10 @@ namespace NPBehave
 
             GUILayout.BeginHorizontal();
             DrawBlackboardKeyAndValues("Blackboard:", selectedDebugger.BehaviorTree.Blackboard);
-            DrawBlackboardKeyAndValues("Custom Stats:", selectedDebugger.CustomStats);
+            if (selectedDebugger.CustomStats.NumData > 0)
+            {
+                DrawBlackboardKeyAndValues("Custom Stats:", selectedDebugger.CustomStats);
+            }
             
             DrawStats(selectedDebugger);
             GUILayout.EndHorizontal();
@@ -171,21 +174,18 @@ namespace NPBehave
 
                 EditorGUILayout.BeginVertical(EditorStyles.helpBox);
                 {
-                    var boolKeys = blackboard.BoolKeys;
-                    foreach (string key in boolKeys)
+                    blackboard.ForeachBool((key, value) =>
                     {
-                        DrawKeyValue(key, blackboard.GetBool(key).ToString());
-                    }
-                    var intKeys = blackboard.IntKeys;
-                    foreach (string key in intKeys)
+                        DrawKeyValue(key, value.ToString());
+                    });
+                    blackboard.ForeachInt((key, value) =>
                     {
-                        DrawKeyValue(key, blackboard.GetInt(key).ToString());
-                    }
-                    var floatKeys = blackboard.FloatKeys;
-                    foreach (string key in floatKeys)
+                        DrawKeyValue(key, value.ToString());
+                    });
+                    blackboard.ForeachFloat((key, value) =>
                     {
-                        DrawKeyValue(key, blackboard.GetFloat(key).ToString("F2"));
-                    }
+                        DrawKeyValue(key, value.ToString("F2"));
+                    });
                 }
                 EditorGUILayout.EndVertical();
             }
