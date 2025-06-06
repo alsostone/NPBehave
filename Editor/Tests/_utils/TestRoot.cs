@@ -15,8 +15,7 @@
             get { return wasSuccess; }
         }
 
-        public TestRoot(Blackboard blackboard, Clock clock, Node decoratee) :
-            base(blackboard, clock, decoratee)
+        public TestRoot(BehaveWorld behaveWorld, Blackboard blackboard, Node decoratee) : base(behaveWorld, blackboard, decoratee)
         {
         }
 

@@ -5,16 +5,6 @@ namespace NPBehave
 
     public class BlackboardTest : Test
     {
-        private Clock clock;
-        private Blackboard sut;
-
-        [SetUp]
-        public void SetUp()
-        {
-            this.clock = new Clock();
-            this.sut = new Blackboard(clock);
-        }
-
         private class SetBlackboardKey : Node
         {
             private string observerName;
@@ -64,28 +54,32 @@ namespace NPBehave
             behaviorTree.Start();
             
             Blackboard.Set("test", 1f);
-            Timer.Update(1f);
+            BehaveWorld.Update(1f);
             Assert.IsTrue(Blackboard.Get<bool>("notified"));
         }
 
         [Test]
         public void ShouldAllowToSetToNull_WhenAlreadySertToNull()
         {
-            this.sut.Set("test", 1f);
-            Assert.AreEqual(this.sut.Get("test"), 1f);
-            this.sut.Set("test", null);
-            this.sut.Set("test", null);
-            Assert.AreEqual(this.sut.Get("test"), null);
-            this.sut.Set("test", "something");
-            Assert.AreEqual(this.sut.Get("test"), "something");
+            var behaveWorld = new BehaveWorld();
+            var blackboard = behaveWorld.CreateBlackboard();
+            blackboard.Set("test", 1f);
+            Assert.AreEqual(blackboard.Get("test"), 1f);
+            blackboard.Set("test", null);
+            blackboard.Set("test", null);
+            Assert.AreEqual(blackboard.Get("test"), null);
+            blackboard.Set("test", "something");
+            Assert.AreEqual(blackboard.Get("test"), "something");
         }
 
         // check for https://github.com/meniku/NPBehave/issues/17
         [Test]
         public void ShouldListenToEvents_WhenUsingChildBlackboard()
         {
-            Blackboard rootBlackboard = new Blackboard(clock);
-            Blackboard blackboard = new Blackboard(rootBlackboard, clock);
+            var behaveWorld = new BehaveWorld();
+
+            Blackboard rootBlackboard = behaveWorld.CreateBlackboard();
+            Blackboard blackboard = behaveWorld.CreateBlackboard(rootBlackboard);
 
             // our mock nodes we want to query for status
             MockNode firstChild = new MockNode(false); // false -> fail when aborted
@@ -97,7 +91,7 @@ namespace NPBehave
 
             // set up the tree
             Selector selector = new Selector(firstCondition, secondCondition);
-            TestRoot behaviorTree = new TestRoot(blackboard, clock, selector);
+            TestRoot behaviorTree = new TestRoot(behaveWorld, blackboard, selector);
 
             // intially we want to activate branch2
             rootBlackboard.Set("branch2", true);
@@ -106,7 +100,7 @@ namespace NPBehave
             behaviorTree.Start();
 
             // tick the timer to ensure the blackboard notifies the nodes
-            clock.Update(0.1f);
+            behaveWorld.Update(0.1f);
 
             // verify the second child is running
             Assert.AreEqual(Node.State.INACTIVE, firstChild.CurrentState);
@@ -116,7 +110,7 @@ namespace NPBehave
             rootBlackboard.Set("branch1", true);
 
             // tick the timer to ensure the blackboard notifies the nodes
-            clock.Update(0.1f);
+            behaveWorld.Update(0.1f);
 
             // now we should be in branch1
             Assert.AreEqual(Node.State.ACTIVE, firstChild.CurrentState);

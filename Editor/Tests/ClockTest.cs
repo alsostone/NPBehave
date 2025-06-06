@@ -4,15 +4,7 @@ namespace NPBehave
 
     public class ClockTest : Test
     {
-        private NPBehave.Clock sut;
-
-        [SetUp]
-        public void SetUp()
-        {
-            this.sut = new NPBehave.Clock();
-        }
-        
-        private class IncrBlackboardKey : Node
+	    private class IncrBlackboardKey : Node
         {
             private string key;
             private int value;
@@ -50,7 +42,7 @@ namespace NPBehave
             behaviorTree.Blackboard.Set("currentAction", 0);
             behaviorTree.Start();
 
-            behaviorTree.Clock.Update(0);
+            BehaveWorld.Update(0);
             Assert.AreEqual(5, behaviorTree.Blackboard.Get<int>("currentAction"));
         }
         

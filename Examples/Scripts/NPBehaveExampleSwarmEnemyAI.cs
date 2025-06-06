@@ -15,7 +15,7 @@ public class NPBehaveExampleSwarmEnemyAI : MonoBehaviour
 
         // create a new blackboard instance for this ai instance, parenting it to the sharedBlackboard.
         // This way we can also access shared values through the own blackboard.
-        ownBlackboard = new Blackboard(sharedBlackboard, UnityContext.GetClock());
+        ownBlackboard = UnityContext.CreateBlackboard(sharedBlackboard);
 
         // create the behaviourTree
         behaviorTree = CreateBehaviourTree();
@@ -75,7 +75,7 @@ public class NPBehaveExampleSwarmEnemyAI : MonoBehaviour
     {
         // Tell the behaviour tree to use the provided blackboard instead of creating a new one
         var transform1 = transform;
-        return new Root(ownBlackboard, UnityContext.GetClock(),
+        return new Root(UnityContext.GetInstance().BehaveWorld, ownBlackboard,
 
             // Update values in the blackboards every 125 milliseconds
             new UpdateService(sharedBlackboard, transform1, 0.125f,

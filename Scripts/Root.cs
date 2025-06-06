@@ -5,30 +5,28 @@ namespace NPBehave
 {
     public class Root : Decorator
     {
+        private readonly BehaveWorld behaveWorld;
         private readonly Blackboard blackboard;
-        private readonly Clock clock;
-        
+
         [MemoryPackIgnore] public Blackboard RootBlackboard => blackboard;
-        [MemoryPackIgnore] public Clock RootClock => clock;
+        [MemoryPackIgnore] public Clock RootClock => behaveWorld.Clock;
+        [MemoryPackIgnore] public BehaveWorld RootBehaveWorld => behaveWorld;
 
 #if UNITY_EDITOR
         [MemoryPackIgnore] public int TotalNumStartCalls = 0;
         [MemoryPackIgnore] public int TotalNumStopCalls = 0;
         [MemoryPackIgnore] public int TotalNumStoppedCalls = 0;
 #endif
-
-        public Root(Clock clock, Node decoratee) : base("Root", decoratee)
+        
+        [MemoryPackConstructor]
+        public Root(Node decoratee) : base("Root", decoratee)
         {
-            this.blackboard = new Blackboard(clock);
-            this.clock = clock;
-            this.SetRoot(this);
         }
 
-        [MemoryPackConstructor]
-        public Root(Blackboard blackboard, Clock clock, Node decoratee) : base("Root", decoratee)
+        public Root(BehaveWorld behaveWorld, Blackboard blackboard, Node decoratee) : base("Root", decoratee)
         {
+            this.behaveWorld = behaveWorld;
             this.blackboard = blackboard;
-            this.clock = clock;
             this.SetRoot(this);
         }
 
@@ -51,7 +49,7 @@ namespace NPBehave
             }
             else
             {
-                this.clock.RemoveTimer(Guid);
+                RootClock.RemoveTimer(Guid);
             }
         }
         

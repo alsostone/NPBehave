@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections.Generic;
 
 namespace NPBehave
 {
@@ -7,7 +6,7 @@ namespace NPBehave
     {
         private static UnityContext instance = null;
 
-        private static UnityContext GetInstance()
+        public static UnityContext GetInstance()
         {
             if (instance == null)
             {
@@ -21,29 +20,24 @@ namespace NPBehave
             }
             return instance;
         }
-
-        public static Clock GetClock()
-        {
-            return GetInstance().clock;
-        }
-
+        
         public static Blackboard GetSharedBlackboard(string key)
         {
             UnityContext context = GetInstance();
-            if (!context.blackboards.ContainsKey(key))
-            {
-                context.blackboards.Add(key, new Blackboard(context.clock));
-            }
-            return context.blackboards[key];
+            return context.BehaveWorld.GetSharedBlackboard(key);
         }
-
-        private Dictionary<string, Blackboard> blackboards = new Dictionary<string, Blackboard>();
-
-        private Clock clock = new Clock();
+        
+        public static Blackboard CreateBlackboard(Blackboard parent = null)
+        {
+            UnityContext context = GetInstance();
+            return context.BehaveWorld.CreateBlackboard(parent);
+        }
+        
+        public readonly BehaveWorld BehaveWorld = new BehaveWorld();
 
         void Update()
         {
-            clock.Update(Time.deltaTime);
+            BehaveWorld.Update(Time.deltaTime);
         }
     }
 }

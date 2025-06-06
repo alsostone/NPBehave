@@ -8,7 +8,7 @@ public class NPBehaveExampleHelloWorldAI : MonoBehaviour
 
     void Start()
     {
-        behaviorTree = new Root(UnityContext.GetClock(),
+        behaviorTree = new Root(UnityContext.GetInstance().BehaveWorld, UnityContext.CreateBlackboard(),
             new ActionLog("Hello World!")
         );
         behaviorTree.Start();

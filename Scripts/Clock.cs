@@ -18,6 +18,7 @@ namespace NPBehave
                 scheduledTime = elapsedTime + delay - randomVariance * 0.5f + randomVariance * UnityEngine.Random.value;
             }
         }
+        
         [MemoryPackInclude] private double elapsedTime = 0f;
         [MemoryPackInclude] private bool isInUpdate = false;
         
@@ -29,8 +30,14 @@ namespace NPBehave
         [MemoryPackInclude] private HashSet<int> addObservers = new HashSet<int>();
         [MemoryPackInclude] private HashSet<int> removeObservers = new HashSet<int>();
         
-        [MemoryPackIgnore] public readonly Dictionary<int, Receiver> IdNodeMapping = new Dictionary<int, Receiver>();
+        [MemoryPackIgnore] private BehaveWorld world;
         [MemoryPackIgnore] private readonly Queue<Timer> timerPool = new Queue<Timer>();
+
+        internal Clock() { }
+        internal void Set(BehaveWorld center)
+        {
+            this.world = center;
+        }
         
         /// <summary>Register a timer function</summary>
         /// <param name="time">time in milliseconds</param>
@@ -188,7 +195,7 @@ namespace NPBehave
             }
         }
 
-        public void Update(float deltaTime)
+        internal void Update(float deltaTime)
         {
             this.elapsedTime += deltaTime;
             this.isInUpdate = true;
@@ -197,7 +204,7 @@ namespace NPBehave
             {
                 if (!removeObservers.Contains(action))
                 {
-                    IdNodeMapping[action].OnTimerReached();
+                    world.IdNodeMapping[action].OnTimerReached();
                 }
             }
 
@@ -221,7 +228,7 @@ namespace NPBehave
                         timer.repeat--;
                     }
                     
-                    IdNodeMapping[callback].OnTimerReached();
+                    world.IdNodeMapping[callback].OnTimerReached();
 					timer.ScheduleAbsoluteTime(elapsedTime);
                 }
             }

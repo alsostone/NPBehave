@@ -27,7 +27,7 @@ namespace NPBehave
             {
                 if (_customStats == null)
                 {
-                    _customStats = new Blackboard(CustomGlobalStats, UnityContext.GetClock());
+                    _customStats = UnityContext.CreateBlackboard();;
                 }
                 return _customStats;
             }

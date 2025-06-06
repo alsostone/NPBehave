@@ -10,7 +10,7 @@ namespace NPBehave
         CHANGE
     }
     
-    [MemoryPackable(GenerateType.CircularReference)]
+    [MemoryPackable]
     public partial class Blackboard : Receiver
     {
         private struct Notification
@@ -27,52 +27,48 @@ namespace NPBehave
             }
         }
 
-        private Clock clock;
-
-        [MemoryPackInclude, MemoryPackOrder(1)] private Blackboard parent;
-        [MemoryPackInclude, MemoryPackOrder(2)] private HashSet<Blackboard> children = new HashSet<Blackboard>();
-        [MemoryPackInclude, MemoryPackOrder(3)] private Dictionary<string, object> data = new Dictionary<string, object>();
+        [MemoryPackInclude] private int parentGuid;
+        [MemoryPackInclude] private HashSet<int> children = new HashSet<int>();
+        [MemoryPackInclude] private Dictionary<string, object> data = new Dictionary<string, object>();
         
-        [MemoryPackInclude, MemoryPackOrder(4)] private bool isNotifying = false;
-        [MemoryPackInclude, MemoryPackOrder(5)] private List<Notification> notifications = new List<Notification>();
-        [MemoryPackInclude, MemoryPackOrder(6)] private List<Notification> notificationsDispatch = new List<Notification>();
+        [MemoryPackInclude] private bool isNotifying = false;
+        [MemoryPackInclude] private List<Notification> notifications = new List<Notification>();
+        [MemoryPackInclude] private List<Notification> notificationsDispatch = new List<Notification>();
         
-        [MemoryPackInclude, MemoryPackOrder(7)] private Dictionary<string, List<int>> observers = new Dictionary<string, List<int>>();
-        [MemoryPackInclude, MemoryPackOrder(8)] private Dictionary<string, List<int>> addObservers = new Dictionary<string, List<int>>();
-        [MemoryPackInclude, MemoryPackOrder(9)] private Dictionary<string, List<int>> removeObservers = new Dictionary<string, List<int>>();
+        [MemoryPackInclude] private Dictionary<string, List<int>> observers = new Dictionary<string, List<int>>();
+        [MemoryPackInclude] private Dictionary<string, List<int>> addObservers = new Dictionary<string, List<int>>();
+        [MemoryPackInclude] private Dictionary<string, List<int>> removeObservers = new Dictionary<string, List<int>>();
         
-        [MemoryPackIgnore] public readonly Dictionary<int, Receiver> IdNodeMapping = new Dictionary<int, Receiver>();
+        [MemoryPackIgnore] private BehaveWorld behaveWorld;
+        [MemoryPackIgnore] private Blackboard parent;
+        [MemoryPackIgnore] private Clock clock;
 
         [MemoryPackConstructor]
-        private Blackboard()
+        private Blackboard() { }
+
+        internal Blackboard(Blackboard parent)
         {
+            this.parentGuid = parent?.Guid ?? 0;
         }
 
-        [MemoryPackOnDeserialized]
-        private void OnDeserialized() 
+        internal void Set(BehaveWorld world)
         {
-        }
-        
-        public Blackboard(Blackboard parent, Clock clock)
-        {
-            this.Guid = ReceiverIdGenerator.GetNextGuid();
-            this.clock = clock;
-            this.parent = parent;
-            this.clock.IdNodeMapping.Add(Guid, this);
-        }
-        public Blackboard(Clock clock)
-        {
-            this.Guid = ReceiverIdGenerator.GetNextGuid();
-            this.clock = clock;
-            this.parent = null;
-            this.clock.IdNodeMapping.Add(Guid, this);
+            this.behaveWorld = world;
+            
+            // 注册到黑板的意义：通过Guid找到该节点，后调用该节点的方法
+            if (this.Guid < 0)
+                this.Guid = world.GetNextGuid();
+            world.IdNodeMapping.Add(this.Guid, this);
+            
+            parent = world.GetBlackboard(parentGuid);
+            clock = world.Clock;
         }
 
         public void Enable()
         {
             if (this.parent != null)
             {
-                this.parent.children.Add(this);
+                this.parent.children.Add(this.Guid);
             }
         }
 
@@ -80,7 +76,7 @@ namespace NPBehave
         {
             if (this.parent != null)
             {
-                this.parent.children.Remove(this);
+                this.parent.children.Remove(this.Guid);
             }
             if (this.clock != null)
             {
@@ -284,8 +280,9 @@ namespace NPBehave
             notificationsDispatch.AddRange(notifications);
             foreach (var child in children)
             {
-                child.notifications.AddRange(notifications);
-                child.clock.AddTimer(0f, 0, child.Guid);
+                var childBlackboard = behaveWorld.GetBlackboard(child);
+                childBlackboard.notifications.AddRange(notifications);
+                childBlackboard.clock.AddTimer(0f, 0, child);
             }
             notifications.Clear();
 
@@ -304,7 +301,7 @@ namespace NPBehave
                     {
                         continue;
                     }
-                    IdNodeMapping[observer].OnObservingChanged(notification.type, notification.value);
+                    behaveWorld.IdNodeMapping[observer].OnObservingChanged(notification.type, notification.value);
                 }
             }
 
