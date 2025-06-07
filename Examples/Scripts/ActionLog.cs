@@ -1,10 +1,12 @@
+using MemoryPack;
 using UnityEngine;
 
 namespace NPBehave.Examples
 {
-    public class ActionLog : Action
+    [MemoryPackable]
+    public partial class ActionLog : Action
     {
-        private readonly string text;
+        [MemoryPackInclude] private readonly string text;
         
         public ActionLog(string text)
         {

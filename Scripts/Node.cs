@@ -31,6 +31,7 @@ namespace NPBehave
         protected Node(string name)
         {
             this.name = name;
+            NodeFormatter.TryAddFormatter(this);
         }
 
         public virtual void SetRoot(Root rootNode)

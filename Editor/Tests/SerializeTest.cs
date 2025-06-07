@@ -1,5 +1,6 @@
-﻿using MemoryPack;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using NPBehave.Examples;
+using MemoryPack;
 
 namespace NPBehave
 {
@@ -51,5 +52,28 @@ namespace NPBehave
             Assert.AreEqual(behaveWorld.Clock.NumTimers, 0);
             Assert.AreEqual(behaveWorld1.Clock.NumTimers, 0);
         }
+        
+        [Test]
+        public void ShouldEqual_SerializedBehaveWorldAndRoot()
+        {
+            var world = new BehaveWorld();
+            var root1 = new Root(world, new Sequence(new ActionLog("root1 1"), new ActionLog("root1 2")));
+            var root2 = new Root(world, new Sequence(new ActionLog("root2 1"), new ActionLog("root2 2")));
+            
+            var worldBytes = MemoryPackSerializer.Serialize(world);
+            var root1Bytes = MemoryPackSerializer.Serialize(root1);
+            var root2Bytes = MemoryPackSerializer.Serialize(root2);
+            
+            world = MemoryPackSerializer.Deserialize<BehaveWorld>(worldBytes);
+            
+            // 反序列化节点1并重建其上下文
+            root1 = MemoryPackSerializer.Deserialize<Root>(root1Bytes);
+            root1.SetWorld(world);
+            
+            // 反序列化节点2并重建其上下文
+            root2 = MemoryPackSerializer.Deserialize<Root>(root2Bytes);
+            root2.SetWorld(world);
+        }
+
     }
 }

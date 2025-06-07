@@ -18,7 +18,7 @@ namespace NPBehave
         [MemoryPackInclude] private int runningCount = 0;
         [MemoryPackInclude] private int succeededCount = 0;
         [MemoryPackInclude] private int failedCount = 0;
-        [MemoryPackInclude] private Dictionary<Node, bool> childrenResults;
+        [MemoryPackInclude] private Dictionary<int, bool> childrenResults;
         [MemoryPackInclude] private bool successState;
         [MemoryPackInclude] private bool childrenAborted;
 
@@ -27,7 +27,7 @@ namespace NPBehave
             this.successPolicy = successPolicy;
             this.failurePolicy = failurePolicy;
             childrenCount = children.Length;
-            childrenResults = new Dictionary<Node, bool>();
+            childrenResults = new Dictionary<int, bool>();
         }
 
         protected override void DoStart()
@@ -65,7 +65,7 @@ namespace NPBehave
             {
                 failedCount++;
             }
-            childrenResults[child] = result;
+            childrenResults[child.Guid] = result;
 
             bool allChildrenStarted = runningCount + succeededCount + failedCount == childrenCount;
             if (allChildrenStarted)
@@ -124,7 +124,7 @@ namespace NPBehave
         {
             if (immediateRestart)
             {
-                if (childrenResults[abortForChild])
+                if (childrenResults[abortForChild.Guid])
                 {
                     succeededCount--;
                 }

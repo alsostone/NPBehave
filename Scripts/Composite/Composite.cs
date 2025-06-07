@@ -4,7 +4,7 @@ namespace NPBehave
 {
     public abstract class Composite : Container
     {
-        [MemoryPackInclude] protected Node[] Children;
+        [MemoryPackInclude] protected readonly Node[] Children;
 
         protected Composite(string name, Node[] children) : base(name)
         {
