@@ -16,9 +16,7 @@ namespace NPBehave
         
         public BehaveWorld()
         {
-            Clock = new Clock();
-            Clock.Set(this);
-            
+            Clock = new Clock(this);
             blackboards = new List<Blackboard>();
             sharedBlackboards = new Dictionary<string, int>();
         }
@@ -27,8 +25,6 @@ namespace NPBehave
         private BehaveWorld(Clock clock, List<Blackboard> blackboards, Dictionary<string, int> sharedBlackboards)
         {
             Clock = clock;
-            Clock.Set(this);
-            
             this.blackboards = blackboards;
             this.sharedBlackboards = sharedBlackboards;
         }
@@ -36,9 +32,10 @@ namespace NPBehave
         [MemoryPackOnDeserialized]
         private void OnDeserialized() 
         {
+            Clock.SetWorld(this);
             foreach (var blackboard in blackboards)
             {
-                blackboard.Set(this);
+                blackboard.SetWorld(this);
             }
         }
         
@@ -58,8 +55,7 @@ namespace NPBehave
 
         public Blackboard CreateBlackboard(Blackboard parent = null)
         {
-            var blackboard = new Blackboard(parent);
-            blackboard.Set(this);
+            var blackboard = new Blackboard(this, parent);
             blackboards.Add(blackboard);
             return blackboard;
         }

@@ -48,22 +48,22 @@ namespace NPBehave
         [MemoryPackConstructor]
         private Blackboard() { }
 
-        internal Blackboard(Blackboard parent)
+        internal Blackboard(BehaveWorld world, Blackboard parent)
         {
-            parentGuid = parent?.Guid ?? -1;
+            this.Guid = world.GetNextGuid();
+            this.behaveWorld = world;
+            this.parent = parent;
+            this.clock = world.Clock;
+            this.parentGuid = parent?.Guid ?? -1;
+            world.GuidReceiverMapping.Add(Guid, this);
         }
 
-        internal void Set(BehaveWorld world)
+        internal void SetWorld(BehaveWorld world)
         {
             behaveWorld = world;
-            
-            // 注册到黑板的意义：通过Guid找到该节点，后调用该节点的方法
-            if (Guid < 0)
-                Guid = world.GetNextGuid();
-            world.GuidReceiverMapping.Add(Guid, this);
-            
             parent = world.GetBlackboard(parentGuid);
             clock = world.Clock;
+            world.GuidReceiverMapping.Add(Guid, this);
         }
 
         public void Enable()

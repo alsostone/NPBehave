@@ -44,7 +44,7 @@ public class NPBehaveExampleEnemyAI : MonoBehaviour
     {
         // we always need a root node
         var transform1 = transform;
-        return new Root(UnityContext.GetBehaveWorld(), UnityContext.CreateBlackboard(),
+        return new Root(UnityContext.GetBehaveWorld(),
 
             // kick up our service to update the "playerDistance" and "playerLocalPos" Blackboard values every 125 milliseconds
             new UpdateService(transform1, 0.125f,

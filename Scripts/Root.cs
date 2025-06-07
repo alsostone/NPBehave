@@ -3,14 +3,14 @@ using MemoryPack;
 
 namespace NPBehave
 {
-    public class Root : Decorator
+    [MemoryPackable]
+    public partial class Root : Decorator
     {
-        private readonly BehaveWorld behaveWorld;
-        private readonly Blackboard blackboard;
-
-        [MemoryPackIgnore] public Blackboard RootBlackboard => blackboard;
-        [MemoryPackIgnore] public Clock RootClock => behaveWorld.Clock;
-        [MemoryPackIgnore] public BehaveWorld RootBehaveWorld => behaveWorld;
+        [MemoryPackInclude] private readonly int blackboardGuid;
+        
+        [MemoryPackIgnore] public Blackboard RootBlackboard { get; private set; }
+        [MemoryPackIgnore] public Clock RootClock { get; private set; }
+        [MemoryPackIgnore] public BehaveWorld RootBehaveWorld { get; private set; }
 
 #if UNITY_EDITOR
         [MemoryPackIgnore] public int TotalNumStartCalls = 0;
@@ -19,25 +19,40 @@ namespace NPBehave
 #endif
         
         [MemoryPackConstructor]
-        public Root(Node decoratee) : base("Root", decoratee)
+        private Root(Node decoratee) : base("Root", decoratee)
         {
         }
 
-        public Root(BehaveWorld behaveWorld, Blackboard blackboard, Node decoratee) : base("Root", decoratee)
+        public Root(BehaveWorld world, Node decoratee) : base("Root", decoratee)
         {
-            this.behaveWorld = behaveWorld;
-            this.blackboard = blackboard;
-            SetRoot(this);
+            RootBlackboard = world.CreateBlackboard();
+            RootClock = world.Clock;
+            RootBehaveWorld = world;
+            blackboardGuid = RootBlackboard.Guid;
+            base.SetRoot(this);
         }
-
-        public sealed override void SetRoot(Root rootNode)
+        
+        public Root(BehaveWorld world, Blackboard blackboard, Node decoratee) : base("Root", decoratee)
         {
-            base.SetRoot(rootNode);
+            RootBlackboard = blackboard;
+            RootClock = world.Clock;
+            RootBehaveWorld = world;
+            blackboardGuid = RootBlackboard.Guid;
+            base.SetRoot(this);
+        }
+        
+        // 反序列化后 手动调用该接口 以恢复上下文
+        public void SetWorld(BehaveWorld world)
+        {
+            RootBlackboard = world.GetBlackboard(blackboardGuid);
+            RootClock = world.Clock;
+            RootBehaveWorld = world;
+            base.SetRoot(this);
         }
 
         protected override void DoStart()
         {
-            blackboard.Enable();
+            Blackboard.Enable();
             Decoratee.Start();
         }
 
@@ -62,7 +77,7 @@ namespace NPBehave
             }
             else
             {
-                blackboard.Disable();
+                Blackboard.Disable();
                 Stopped(success);
             }
         }

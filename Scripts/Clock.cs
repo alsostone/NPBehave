@@ -34,8 +34,15 @@ namespace NPBehave
         [MemoryPackIgnore] private BehaveWorld behaveWorld;
         [MemoryPackIgnore] private readonly Queue<Timer> timerPool = new Queue<Timer>();
 
-        internal Clock() { }
-        internal void Set(BehaveWorld world)
+        [MemoryPackConstructor]
+        private Clock() { }
+
+        internal Clock(BehaveWorld world)
+        {
+            behaveWorld = world;
+        }
+        
+        internal void SetWorld(BehaveWorld world)
         {
             behaveWorld = world;
         }
