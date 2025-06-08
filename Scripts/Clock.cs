@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using MemoryPack;
 
@@ -18,7 +19,7 @@ namespace NPBehave
     }
     
     [MemoryPackable]
-    public partial class Clock
+    public partial class Clock : IDisposable
     {
         [MemoryPackInclude] private double elapsedTime = 0f;
         [MemoryPackInclude] private bool isInUpdate = false;
@@ -40,6 +41,13 @@ namespace NPBehave
         internal Clock(BehaveWorld world)
         {
             behaveWorld = world;
+        }
+        
+        public void Dispose()
+        {
+            timers.Clear();
+            addTimers.Clear();
+            timerPool.Clear();
         }
         
         internal void SetWorld(BehaveWorld world)

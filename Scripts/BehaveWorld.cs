@@ -1,10 +1,11 @@
+using System;
 using System.Collections.Generic;
 using MemoryPack;
 
 namespace NPBehave
 {
     [MemoryPackable]
-    public partial class BehaveWorld
+    public partial class BehaveWorld : IDisposable
     {
         [MemoryPackInclude] public Clock Clock { get; private set; }
         
@@ -13,6 +14,7 @@ namespace NPBehave
         [MemoryPackInclude] private readonly Dictionary<string, int> sharedBlackboards;
         
         [MemoryPackIgnore] public readonly Dictionary<int, Receiver> GuidReceiverMapping = new Dictionary<int, Receiver>();
+        [MemoryPackIgnore] private System.Random random;
         
         public BehaveWorld()
         {
@@ -37,6 +39,26 @@ namespace NPBehave
             {
                 blackboard.SetWorld(this);
             }
+        }
+        
+        // 防止因为循环依赖导致无法GC
+        public void Dispose()
+        {
+            Clock.Dispose();
+            Clock = null;
+            foreach (var blackboard in blackboards)
+            {
+                blackboard.Dispose();
+            }
+            blackboards.Clear();
+            sharedBlackboards.Clear();
+            GuidReceiverMapping.Clear();
+            random = null;
+        }
+        
+        public void SetRandom(System.Random random)
+        {
+            this.random = random;
         }
         
         public int GetNextGuid()
@@ -80,16 +102,11 @@ namespace NPBehave
             Clock.Update(deltaTime);
         }
 
-#if UNITY_EDITOR
-        public static void DebugSetSeed( int seed )
-        {
-            rng = new System.Random( seed );
-        }
-#endif
-        static System.Random rng = new System.Random();
         public int GetRandomNext(int range)
         {
-            return rng.Next(range);
+            if (random == null)
+                random = new System.Random(Environment.TickCount);
+            return random.Next(range);
         }
 
     }

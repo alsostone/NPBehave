@@ -11,7 +11,15 @@ namespace NPBehave
             Decoratee = decoratee;
             Decoratee.SetParent(this);
         }
-
+        
+        // 防止因为循环依赖导致无法GC
+        public override void Dispose()
+        {
+            Decoratee.Dispose();
+            Decoratee = null;
+            base.Dispose();
+        }
+        
         public override void SetRoot(Root rootNode)
         {
             base.SetRoot(rootNode);

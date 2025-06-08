@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using MemoryPack;
 
 namespace NPBehave
@@ -24,7 +25,7 @@ namespace NPBehave
     }
     
     [MemoryPackable]
-    public partial class Blackboard : Receiver
+    public partial class Blackboard : Receiver, IDisposable
     {
         [MemoryPackInclude] private int parentGuid;
         [MemoryPackInclude] private HashSet<int> childrenGuid = new HashSet<int>();
@@ -57,6 +58,14 @@ namespace NPBehave
             world.GuidReceiverMapping.Add(Guid, this);
         }
 
+        // 防止因为循环依赖导致无法GC
+        public void Dispose()
+        {
+            behaveWorld = null;
+            parent = null;
+            clock = null;
+        }
+        
         internal void SetWorld(BehaveWorld world)
         {
             behaveWorld = world;
