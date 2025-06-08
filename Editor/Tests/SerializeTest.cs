@@ -73,6 +73,12 @@ namespace NPBehave
             // 反序列化节点2并重建其上下文
             root2 = MemoryPackSerializer.Deserialize<Root>(root2Bytes);
             root2.SetWorld(world);
+            
+            root1.Start();
+            root2.Start();
+            
+            world.Update(1);
+            world.Update(1);
         }
 
     }
