@@ -18,7 +18,7 @@ namespace NPBehave
         /// 监视的值发生变化时被调用
         /// 使用Blackboard.AddObserver注册当前节点后才能被调用
         /// Override this method
-        public virtual void OnObservingChanged(NotifyType type)
+        public virtual void OnObservingChanged(BlackboardChangeType type)
         {
             
         }

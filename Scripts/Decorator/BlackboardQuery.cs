@@ -27,7 +27,7 @@ namespace NPBehave
             }
         }
         
-        public override void OnObservingChanged(NotifyType type)
+        public override void OnObservingChanged(BlackboardChangeType type)
         {
             Evaluate();
         }

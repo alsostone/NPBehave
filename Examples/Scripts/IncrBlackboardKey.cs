@@ -5,11 +5,11 @@ namespace NPBehave
     [MemoryPackable]
     public partial class IncrBlackboardKey : Node
     {
-        [MemoryPackInclude] private string key;
+        [MemoryPackInclude] private string blackboardKey;
 
-        public IncrBlackboardKey(string key) : base("IncrBlackboardKey")
+        public IncrBlackboardKey(string blackboardKey) : base("IncrBlackboardKey")
         {
-            this.key = key;
+            this.blackboardKey = blackboardKey;
         }
         protected override void DoStart()
         {
@@ -21,7 +21,7 @@ namespace NPBehave
         }
         public override void OnTimerReached()
         {
-            Blackboard.SetInt(key, Blackboard.GetInt(key) + 1);
+            Blackboard.SetInt(blackboardKey, Blackboard.GetInt(blackboardKey) + 1);
         }
     }
 

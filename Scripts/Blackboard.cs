@@ -4,7 +4,7 @@ using MemoryPack;
 
 namespace NPBehave
 {
-    public enum NotifyType
+    public enum BlackboardChangeType
     {
         ADD,
         REMOVE,
@@ -14,13 +14,13 @@ namespace NPBehave
     [MemoryPackable]
     public partial struct Notification
     {
-        public readonly string key;
-        public readonly NotifyType type;
+        public readonly string blackboardKey;
+        public readonly BlackboardChangeType changeType;
 
-        public Notification(string key, NotifyType type)
+        public Notification(string blackboardKey, BlackboardChangeType changeType)
         {
-            this.key = key;
-            this.type = type;
+            this.blackboardKey = blackboardKey;
+            this.changeType = changeType;
         }
     }
     
@@ -106,7 +106,7 @@ namespace NPBehave
                 if (!dataBool.TryGetValue(key, out var dataValue))
                 {
                     dataBool[key] = value;
-                    notifications.Add(new Notification(key, NotifyType.ADD));
+                    notifications.Add(new Notification(key, BlackboardChangeType.ADD));
                     clock.AddTimer(0f, 0, Guid);
                 }
                 else
@@ -114,7 +114,7 @@ namespace NPBehave
                     if (!dataValue.Equals(value))
                     {
                         dataBool[key] = value;
-                        notifications.Add(new Notification(key, NotifyType.CHANGE));
+                        notifications.Add(new Notification(key, BlackboardChangeType.CHANGE));
                         clock.AddTimer(0f, 0, Guid);
                     }
                 }
@@ -132,7 +132,7 @@ namespace NPBehave
                 if (!dataInt.TryGetValue(key, out var dataValue))
                 {
                     dataInt[key] = value;
-                    notifications.Add(new Notification(key, NotifyType.ADD));
+                    notifications.Add(new Notification(key, BlackboardChangeType.ADD));
                     clock.AddTimer(0f, 0, Guid);
                 }
                 else
@@ -140,7 +140,7 @@ namespace NPBehave
                     if (!dataValue.Equals(value))
                     {
                         dataInt[key] = value;
-                        notifications.Add(new Notification(key, NotifyType.CHANGE));
+                        notifications.Add(new Notification(key, BlackboardChangeType.CHANGE));
                         clock.AddTimer(0f, 0, Guid);
                     }
                 }
@@ -158,7 +158,7 @@ namespace NPBehave
                 if (!dataFloat.TryGetValue(key, out var dataValue))
                 {
                     dataFloat[key] = value;
-                    notifications.Add(new Notification(key, NotifyType.ADD));
+                    notifications.Add(new Notification(key, BlackboardChangeType.ADD));
                     clock.AddTimer(0f, 0, Guid);
                 }
                 else
@@ -166,7 +166,7 @@ namespace NPBehave
                     if (!dataValue.Equals(value))
                     {
                         dataFloat[key] = value;
-                        notifications.Add(new Notification(key, NotifyType.CHANGE));
+                        notifications.Add(new Notification(key, BlackboardChangeType.CHANGE));
                         clock.AddTimer(0f, 0, Guid);
                     }
                 }
@@ -180,7 +180,7 @@ namespace NPBehave
             if (dataBool.ContainsKey(key))
             {
                 dataBool.Remove(key);
-                notifications.Add(new Notification(key, NotifyType.REMOVE));
+                notifications.Add(new Notification(key, BlackboardChangeType.REMOVE));
                 clock.AddTimer(0f, 0, Guid);
             }
         }
@@ -190,7 +190,7 @@ namespace NPBehave
             if (dataInt.ContainsKey(key))
             {
                 dataInt.Remove(key);
-                notifications.Add(new Notification(key, NotifyType.REMOVE));
+                notifications.Add(new Notification(key, BlackboardChangeType.REMOVE));
                 clock.AddTimer(0f, 0, Guid);
             }
         }
@@ -200,7 +200,7 @@ namespace NPBehave
             if (dataFloat.ContainsKey(key))
             {
                 dataFloat.Remove(key);
-                notifications.Add(new Notification(key, NotifyType.REMOVE));
+                notifications.Add(new Notification(key, BlackboardChangeType.REMOVE));
                 clock.AddTimer(0f, 0, Guid);
             }
         }
@@ -411,19 +411,19 @@ namespace NPBehave
             isNotifying = true;
             foreach (var notification in notificationsDispatch)
             {
-                if (!keyObserversMapping.ContainsKey(notification.key))
+                if (!keyObserversMapping.ContainsKey(notification.blackboardKey))
                 {
                     continue;
                 }
 
-                var observers = GetObservers(keyObserversMapping, notification.key);
+                var observers = GetObservers(keyObserversMapping, notification.blackboardKey);
                 foreach (var observer in observers)
                 {
-                    if (keyRemoveObserversMapping.TryGetValue(notification.key, out var removeObservers) && removeObservers.Contains(observer))
+                    if (keyRemoveObserversMapping.TryGetValue(notification.blackboardKey, out var removeObservers) && removeObservers.Contains(observer))
                     {
                         continue;
                     }
-                    behaveWorld.GuidReceiverMapping[observer].OnObservingChanged(notification.type);
+                    behaveWorld.GuidReceiverMapping[observer].OnObservingChanged(notification.changeType);
                 }
             }
 

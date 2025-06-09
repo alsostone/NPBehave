@@ -38,7 +38,7 @@ namespace NPBehave
             Blackboard.RemoveObserver(blackboardKey, Guid);
         }
         
-        public override void OnObservingChanged(NotifyType type)
+        public override void OnObservingChanged(BlackboardChangeType type)
         {
             Evaluate();
         }
