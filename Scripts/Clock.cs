@@ -24,7 +24,7 @@ namespace NPBehave
         [MemoryPackInclude] private double elapsedTime = 0f;
         [MemoryPackInclude] private bool isInUpdate = false;
         
-        [MemoryPackInclude] private Dictionary<int, Timer> timers = new Dictionary<int, Timer>();
+        [MemoryPackInclude] private SortedDictionary<int, Timer> sortedTimers = new SortedDictionary<int, Timer>();
         [MemoryPackInclude] private Dictionary<int, Timer> addTimers = new Dictionary<int, Timer>();
         [MemoryPackInclude] private HashSet<int> removeTimers = new HashSet<int>();
         
@@ -45,7 +45,7 @@ namespace NPBehave
         
         public void Dispose()
         {
-            timers.Clear();
+            sortedTimers.Clear();
             addTimers.Clear();
             timerPool.Clear();
         }
@@ -75,11 +75,11 @@ namespace NPBehave
 
             if (!isInUpdate)
             {
-                if (!timers.ContainsKey(action))
+                if (!sortedTimers.ContainsKey(action))
                 {
-					timers[action] = GetTimerFromPool();
+					sortedTimers[action] = GetTimerFromPool();
                 }
-				timer = timers[action];
+				timer = sortedTimers[action];
             }
             else
             {
@@ -105,15 +105,15 @@ namespace NPBehave
         {
             if (!isInUpdate)
             {
-                if (timers.ContainsKey(action))
+                if (sortedTimers.ContainsKey(action))
                 {
-                    timerPool.Enqueue(timers[action]);
-                    timers.Remove(action);
+                    timerPool.Enqueue(sortedTimers[action]);
+                    sortedTimers.Remove(action);
                 }
             }
             else
             {
-                if (timers.ContainsKey(action))
+                if (sortedTimers.ContainsKey(action))
                 {
                     removeTimers.Add(action);
                 }
@@ -129,7 +129,7 @@ namespace NPBehave
         {
             if (!isInUpdate)
             {
-                return timers.ContainsKey(action);
+                return sortedTimers.ContainsKey(action);
             }
             else
             {
@@ -143,7 +143,7 @@ namespace NPBehave
                 }
                 else
                 {
-                    return timers.ContainsKey(action);
+                    return sortedTimers.ContainsKey(action);
                 }
             }
         }
@@ -223,28 +223,27 @@ namespace NPBehave
                     behaveWorld.GuidReceiverMapping[action].OnTimerReached();
                 }
             }
-
-            var keys = timers.Keys;
-			foreach (var callback in keys)
+            
+			foreach (var kv in sortedTimers)
             {
-                if (removeTimers.Contains(callback))
+                if (removeTimers.Contains(kv.Key))
                 {
                     continue;
                 }
 
-				Timer timer = timers[callback];
+                Timer timer = kv.Value;
                 if (timer.scheduledTime <= elapsedTime)
                 {
                     if (timer.repeat == 0)
                     {
-                        RemoveTimer(callback);
+                        RemoveTimer(kv.Key);
                     }
                     else if (timer.repeat >= 0)
                     {
                         timer.repeat--;
                     }
                     
-                    behaveWorld.GuidReceiverMapping[callback].OnTimerReached();
+                    behaveWorld.GuidReceiverMapping[kv.Key].OnTimerReached();
 					timer.ScheduleAbsoluteTime(behaveWorld, elapsedTime);
                 }
             }
@@ -259,16 +258,16 @@ namespace NPBehave
             }
             foreach (var pair in addTimers)
             {
-                if (timers.TryGetValue(pair.Key, out var timer))
+                if (sortedTimers.TryGetValue(pair.Key, out var timer))
                 {
                     timerPool.Enqueue(timer);
                 }
-                timers[pair.Key] = pair.Value;
+                sortedTimers[pair.Key] = pair.Value;
             }
             foreach (var action in removeTimers)
             {
-                timerPool.Enqueue(timers[action]);
-                timers.Remove(action);
+                timerPool.Enqueue(sortedTimers[action]);
+                sortedTimers.Remove(action);
             }
             addObservers.Clear();
             removeObservers.Clear();
@@ -280,7 +279,7 @@ namespace NPBehave
         
 #if UNITY_EDITOR
         [MemoryPackIgnore] public int NumUpdateObservers => updateObservers.Count;
-        [MemoryPackIgnore] public int NumTimers => timers.Count;
+        [MemoryPackIgnore] public int NumTimers => sortedTimers.Count;
         [MemoryPackIgnore] public double ElapsedTime => elapsedTime;
         [MemoryPackIgnore] public int DebugPoolSize => timerPool.Count;
 #endif
