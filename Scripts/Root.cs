@@ -11,6 +11,7 @@ namespace NPBehave
         [MemoryPackIgnore] public Blackboard RootBlackboard { get; private set; }
         [MemoryPackIgnore] public Clock RootClock { get; private set; }
         [MemoryPackIgnore] public BehaveWorld RootBehaveWorld { get; private set; }
+        [MemoryPackIgnore] public IAgent RootAgent { get; private set; }
 
 #if UNITY_EDITOR
         [MemoryPackIgnore] public int TotalNumStartCalls = 0;
@@ -23,30 +24,33 @@ namespace NPBehave
         {
         }
 
-        public Root(BehaveWorld world, Node decoratee) : base("Root", decoratee)
+        public Root(BehaveWorld world, Node decoratee, IAgent agent = null) : base("Root", decoratee)
         {
             RootBlackboard = world.CreateBlackboard();
             RootClock = world.Clock;
             RootBehaveWorld = world;
+            RootAgent = agent;
             blackboardGuid = RootBlackboard.Guid;
             base.SetRoot(this);
         }
         
-        public Root(BehaveWorld world, Blackboard blackboard, Node decoratee) : base("Root", decoratee)
+        public Root(BehaveWorld world, Blackboard blackboard, Node decoratee, IAgent agent = null) : base("Root", decoratee)
         {
             RootBlackboard = blackboard;
             RootClock = world.Clock;
             RootBehaveWorld = world;
+            RootAgent = agent;
             blackboardGuid = RootBlackboard.Guid;
             base.SetRoot(this);
         }
         
         // 反序列化后 手动调用该接口 以恢复上下文
-        public void SetWorld(BehaveWorld world)
+        public void SetWorld(BehaveWorld world, IAgent agent = null)
         {
             RootBlackboard = world.GetBlackboard(blackboardGuid);
             RootClock = world.Clock;
             RootBehaveWorld = world;
+            RootAgent = agent;
             base.SetRoot(this);
         }
 
