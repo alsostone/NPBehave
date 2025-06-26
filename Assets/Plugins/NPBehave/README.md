@@ -70,7 +70,6 @@ public void ShouldEqual_SerializedBehaveWorldAndRoot()
     Assert.AreEqual(root2.RootBlackboard.GetInt("currentActionRoot2"), root2New.RootBlackboard.GetInt("currentActionRoot2"));
 }
 ```
-
 ### 例子：一个事件驱动的行为树
 这有一个使用黑板的事件驱动的行为树例子
 ```csharp
